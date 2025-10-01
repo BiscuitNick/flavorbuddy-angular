@@ -9,7 +9,6 @@ import { environment } from '../environments/environment';
 import { RecipePayload } from './recipe.types';
 import { RecipeViewerComponent } from './recipe-viewer.component';
 import { RecipeViewerSkeletonComponent } from './recipe-viewer-skeleton.component';
-import { RecipesListComponent } from './recipes-list.component';
 
 @Component({
   selector: 'app-url-recipe-page',
@@ -19,7 +18,6 @@ import { RecipesListComponent } from './recipes-list.component';
     ReactiveFormsModule,
     RecipeViewerComponent,
     RecipeViewerSkeletonComponent,
-    RecipesListComponent,
     RouterLink,
   ],
   templateUrl: './url-recipe-page.component.html',

@@ -4,8 +4,7 @@
 
 @if (recipe(); as currentRecipe) {
 <app-recipe-viewer [recipe]="currentRecipe" [sourceUrl]="recipeSource()"></app-recipe-viewer>
-}
-
+} @else {
 <section class="space-y-5 print-hidden">
   <div class="space-y-3">
     <h1 class="text-3xl font-semibold tracking-tight">Flavor Buddy</h1>
@@ -51,9 +50,7 @@
   }
 </section>
 
-<app-recipes-list class="print-hidden"></app-recipes-list>
-
-<div class="print-hidden">
+<div class="print-hidden mt-6">
   <a
     routerLink="/convert-text"
     class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
@@ -61,3 +58,4 @@
     Convert raw recipe text →
   </a>
 </div>
+}

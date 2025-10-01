@@ -1,6 +1,10 @@
 @if (recipeSignal(); as recipe) {
-<article class="recipe-card overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl ring-1 ring-slate-100">
-  <div class="recipe-card-header grid gap-6 border-b border-slate-200 bg-gradient-to-br from-sky-50 via-white to-white p-8 md:grid-cols-[220px,1fr] md:items-center">
+<article
+  class="recipe-card overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl ring-1 ring-slate-100 mb-12"
+>
+  <div
+    class="recipe-card-header grid gap-6 border-b border-slate-200 bg-gradient-to-br from-sky-50 via-white to-white p-8 md:grid-cols-[220px,1fr] md:items-center"
+  >
     @if (imageUrl(); as image) {
     <img
       [src]="image"
@@ -10,8 +14,7 @@
     />
     }
     <div class="space-y-4">
-      @let views = viewCount();
-      @let typeLabel = recipeTypeLabel();
+      @let views = viewCount(); @let typeLabel = recipeTypeLabel();
       <h2 class="text-3xl font-semibold leading-tight">{{ recipeTitle() }}</h2>
       <div class="flex flex-wrap items-center gap-3">
         @if (sourceUrlSignal(); as source) {
@@ -41,14 +44,11 @@
         <span>{{ typeLabel }}</span>
         @if (views !== null) {
         <span aria-hidden="true"> • </span>
-        }
-        }
-        @if (views !== null) {
+        } } @if (views !== null) {
         <span>Viewed {{ views }} time{{ views === 1 ? '' : 's' }}</span>
         }
       </p>
-      }
-      @if (description(); as desc) {
+      } @if (description(); as desc) {
       <div class="recipe-description-wrapper">
         <p
           #descriptionParagraph
@@ -77,11 +77,15 @@
       <h3 id="ingredients-heading" class="text-xl font-semibold">Ingredients</h3>
       <ul class="space-y-3">
         @for (item of ingredients(); track $index) {
-        <li class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base leading-relaxed shadow-sm">
+        <li
+          class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base leading-relaxed shadow-sm"
+        >
           {{ item }}
         </li>
         } @empty {
-        <li class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-slate-500">
+        <li
+          class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-slate-500"
+        >
           No ingredients provided.
         </li>
         }
@@ -93,13 +97,17 @@
       <ol class="space-y-4">
         @for (step of instructions(); track $index) {
         <li class="flex gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
-          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 font-semibold text-white">
+          <span
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 font-semibold text-white"
+          >
             {{ $index + 1 }}
           </span>
           <p class="leading-relaxed text-slate-700">{{ step }}</p>
         </li>
         } @empty {
-        <li class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-slate-500">
+        <li
+          class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-slate-500"
+        >
           No directions provided.
         </li>
         }

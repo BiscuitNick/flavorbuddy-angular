@@ -1,8 +1,8 @@
 <section class="space-y-6">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="space-y-1">
-      <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Saved Recipes</h2>
-      <p class="text-sm text-slate-600">Browse recipes you've already parsed and saved.</p>
+      <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Search Recipes</h2>
+      <p class="text-sm text-slate-600 hidden">Browse recipes you've already parsed and saved.</p>
     </div>
     <div class="relative w-full max-w-xs">
       <input
@@ -17,14 +17,18 @@
   </div>
 
   @if (errorMessage(); as message) {
-  <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+  <div
+    class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+  >
     {{ message }}
   </div>
   }
 
   <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
     @if (isLoading()) {
-    <div class="flex items-center justify-center gap-2 px-6 py-16 text-sm font-medium text-slate-500">
+    <div
+      class="flex items-center justify-center gap-2 px-6 py-16 text-sm font-medium text-slate-500"
+    >
       <span class="h-2 w-2 animate-ping rounded-full bg-blue-500"></span>
       Loading recipes…
     </div>
@@ -40,11 +44,20 @@
           [class.pointer-events-none]="!recipe.hasSourceUrl"
           [class.opacity-70]="!recipe.hasSourceUrl"
         >
-          <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+          <div
+            class="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100"
+          >
             @if (recipe.imageUrl) {
-            <img [src]="recipe.imageUrl" alt="Recipe thumbnail" class="h-full w-full object-cover" loading="lazy" />
+            <img
+              [src]="recipe.imageUrl"
+              alt="Recipe thumbnail"
+              class="h-full w-full object-cover"
+              loading="lazy"
+            />
             } @else {
-            <div class="flex h-full w-full items-center justify-center text-base font-semibold uppercase text-slate-500">
+            <div
+              class="flex h-full w-full items-center justify-center text-base font-semibold uppercase text-slate-500"
+            >
               {{ recipe.title.slice(0, 1) || '?' }}
             </div>
             }
@@ -53,7 +66,9 @@
             <h3 class="truncate text-lg font-semibold text-slate-900">{{ recipe.title }}</h3>
             <p class="recipe-description mt-1 text-sm text-slate-600">{{ recipe.description }}</p>
             <p class="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-              {{ formatTypeLabel(recipe.type) }} • {{ recipe.views }} view{{ recipe.views === 1 ? '' : 's' }}
+              {{ formatTypeLabel(recipe.type) }} • {{ recipe.views }} view{{
+                recipe.views === 1 ? '' : 's'
+              }}
             </p>
           </div>
         </a>

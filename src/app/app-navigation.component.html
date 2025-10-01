@@ -1,7 +1,5 @@
 <nav class="navigation" aria-label="Primary">
-  <a routerLink="/" class="navigation__brand">
-    Flavor Buddy
-  </a>
+  <a routerLink="/" class="navigation__brand"> Flavor Buddy </a>
 
   <div class="navigation__links">
     <a
@@ -12,7 +10,7 @@
       class="navigation__link"
       [attr.aria-current]="homeLink.isActive ? 'page' : null"
     >
-      Recipe URL
+      Convert Recipe URL
     </a>
     <a
       routerLink="/convert-text"
@@ -22,6 +20,15 @@
       [attr.aria-current]="convertLink.isActive ? 'page' : null"
     >
       Convert Raw Text
+    </a>
+    <a
+      routerLink="/search"
+      routerLinkActive="navigation__link--active"
+      #searchLink="routerLinkActive"
+      class="navigation__link"
+      [attr.aria-current]="searchLink.isActive ? 'page' : null"
+    >
+      Search Recipes
     </a>
   </div>
 </nav>

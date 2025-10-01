@@ -94,7 +94,7 @@ export class RecipesListComponent {
   constructor() {
     this.searchControl.valueChanges
       .pipe(
-        debounceTime(300),
+        debounceTime(1000),
         map((value) => value.trim()),
         distinctUntilChanged(),
         takeUntilDestroyed()
@@ -103,10 +103,12 @@ export class RecipesListComponent {
         if (term !== this.searchControl.value) {
           this.searchControl.setValue(term, { emitEvent: false });
         }
+        this.updateQueryParam(term);
         this.loadRecipesForPage(1);
       });
 
     if (this.isBrowser) {
+      this.populateFromQuery();
       this.loadRecipesForPage(1);
     }
   }
@@ -130,7 +132,11 @@ export class RecipesListComponent {
   }
 
   protected recipeLink(recipe: RecipeCard): string {
-    return recipe.hasSourceUrl ? `/?url=${encodeURIComponent(recipe.sourceUrl)}` : '/';
+    console.log('recipeLink', recipe.sourceUrl);
+    return `/?url=${recipe.sourceUrl.replace(/%2F/g, '/')}`;
+    //return recipe.hasSourceUrl
+    //  ? `/?url=${encodeURIComponent(recipe.sourceUrl).replace(/%2F/g, '/')}`
+    //  : '/';
   }
 
   protected formatTypeLabel(type: string): string {
@@ -222,6 +228,35 @@ export class RecipesListComponent {
   private currentQuery(): string {
     const raw = this.searchControl.value;
     return typeof raw === 'string' ? raw.trim() : '';
+  }
+
+  private populateFromQuery(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('q');
+    if (query) {
+      this.searchControl.setValue(query, { emitEvent: false });
+    }
+  }
+
+  private updateQueryParam(query: string): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (query) {
+      params.set('q', query);
+    } else {
+      params.delete('q');
+    }
+
+    const search = params.toString();
+    const updated = search ? `${window.location.pathname}?${search}` : window.location.pathname;
+    window.history.replaceState({}, '', updated);
   }
 
   private toCard(recipe: RecipeSummary): RecipeCard {
