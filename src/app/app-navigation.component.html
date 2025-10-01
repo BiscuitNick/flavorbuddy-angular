@@ -1,0 +1,27 @@
+<nav class="navigation" aria-label="Primary">
+  <a routerLink="/" class="navigation__brand">
+    Flavor Buddy
+  </a>
+
+  <div class="navigation__links">
+    <a
+      routerLink="/"
+      routerLinkActive="navigation__link--active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      #homeLink="routerLinkActive"
+      class="navigation__link"
+      [attr.aria-current]="homeLink.isActive ? 'page' : null"
+    >
+      Recipe URL
+    </a>
+    <a
+      routerLink="/convert-text"
+      routerLinkActive="navigation__link--active"
+      #convertLink="routerLinkActive"
+      class="navigation__link"
+      [attr.aria-current]="convertLink.isActive ? 'page' : null"
+    >
+      Convert Raw Text
+    </a>
+  </div>
+</nav>

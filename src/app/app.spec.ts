@@ -1,13 +1,15 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+
 import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideZonelessChangeDetection(), provideHttpClientTesting()]
+      providers: [provideZonelessChangeDetection(), provideHttpClientTesting(), provideRouter([])]
     }).compileComponents();
   });
 
@@ -17,19 +19,25 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render the recipe call to action', () => {
+  it('should render the application shell with navigation and a router outlet', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Parse a Recipe URL');
-    expect(compiled.querySelector('form button')?.textContent).toContain('Fetch');
+    expect(compiled.querySelector('.min-h-screen')).toBeTruthy();
+    expect(compiled.querySelector('app-navigation')).toBeTruthy();
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 
-  it('disables the submit button while the form is invalid', () => {
+  it('includes primary navigation links', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    const button = compiled.querySelector('button[type="submit"]') as HTMLButtonElement;
-    expect(button.disabled).toBeTrue();
+    const linkTexts = Array.from(compiled.querySelectorAll('app-navigation a'))
+      .map((anchor) => anchor.textContent?.trim())
+      .filter((text): text is string => Boolean(text && text.length));
+
+    expect(linkTexts).toContain('Flavor Buddy');
+    expect(linkTexts).toContain('Recipe URL');
+    expect(linkTexts).toContain('Convert Raw Text');
   });
 });

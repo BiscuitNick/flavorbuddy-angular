@@ -1,2 +1,76 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'tailwindcss';
+
+@media print {
+  body,
+  html {
+    background: #fff !important;
+  }
+
+  .min-h-screen,
+  .min-h-screen * {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  main,
+  .min-h-screen {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  main > *:not(.recipe-card) {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .recipe-card-image,
+  .description-toggle,
+  .print-button {
+    display: none !important;
+  }
+
+  .recipe-description-wrapper {
+    display: none !important;
+  }
+
+  .recipe-card {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    break-inside: avoid;
+  }
+
+  .recipe-card-body {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 1.5rem !important;
+    padding: 1.75rem !important;
+  }
+
+  .recipe-card-header {
+    padding: 1.5rem !important;
+    gap: 1rem !important;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .recipe-card-body section {
+    break-inside: avoid;
+  }
+
+  .print-source-url {
+    font-size: 0.95rem;
+    color: #1e293b !important;
+    word-break: break-all;
+    margin-top: 0.25rem;
+  }
+}

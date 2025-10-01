@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+.recipe-description-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.recipe-description {
+  color: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.recipe-description--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.description-toggle {
+  align-self: flex-start;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.description-toggle:hover,
+.description-toggle:focus-visible {
+  text-decoration: underline;
+}
+
+.print-only {
+  display: none !important;
+}
