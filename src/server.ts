@@ -15,7 +15,13 @@ const angularApp = new AngularNodeAppEngine();
 /**
  * Proxy API requests to backend server
  */
-const API_TARGET = process.env['API_BASE_URL']; // || 'http://localhost:5000';
+const API_TARGET = process.env['API_BASE_URL'] || 'http://localhost:5001';
+
+if (!process.env['API_BASE_URL']) {
+  console.warn('⚠️  API_BASE_URL environment variable not set, using default:', API_TARGET);
+} else {
+  console.log('✓ API_BASE_URL configured:', API_TARGET);
+}
 
 app.use(express.json());
 
