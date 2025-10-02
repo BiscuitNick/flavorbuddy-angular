@@ -40,15 +40,12 @@
       </div>
       @if (views !== null || typeLabel) {
       <p class="text-sm text-slate-600 print-hidden">
-        @if (typeLabel) {
-        <span>{{ typeLabel }}</span>
         @if (views !== null) {
-        <span aria-hidden="true"> • </span>
-        } } @if (views !== null) {
         <span>Viewed {{ views }} time{{ views === 1 ? '' : 's' }}</span>
         }
       </p>
-      } @if (description(); as desc) {
+      }
+      @if (description(); as desc) {
       <div class="recipe-description-wrapper">
         <p
           #descriptionParagraph

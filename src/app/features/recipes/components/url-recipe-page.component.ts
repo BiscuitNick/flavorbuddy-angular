@@ -5,8 +5,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
-import { environment } from '../environments/environment';
-import { RecipePayload } from './recipe.types';
+import { environment } from '../../../../environments/environment';
+import { RecipePayload } from '../models/recipe.types';
 import { RecipeViewerComponent } from './recipe-viewer.component';
 import { RecipeViewerSkeletonComponent } from './recipe-viewer-skeleton.component';
 

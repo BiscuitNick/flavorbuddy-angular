@@ -15,7 +15,7 @@ import {
   signal
 } from '@angular/core';
 
-import { RecipePayload } from './recipe.types';
+import { RecipePayload } from '../models/recipe.types';
 
 @Component({
   selector: 'app-recipe-viewer',

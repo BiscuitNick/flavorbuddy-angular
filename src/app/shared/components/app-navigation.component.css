@@ -12,10 +12,17 @@
 }
 
 .navigation__brand {
-  font-size: 1.5rem;
   font-weight: 700;
   color: #0f172a;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navigation__logo {
+  width: 128px;
+  height: auto;
 }
 
 .navigation__links {

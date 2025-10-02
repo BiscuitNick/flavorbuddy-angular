@@ -22,17 +22,11 @@
   >
     {{ message }}
   </div>
-  }
-
+  } @if (isLoading()) {
+  <app-recipes-list-skeleton />
+  } @else {
   <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-    @if (isLoading()) {
-    <div
-      class="flex items-center justify-center gap-2 px-6 py-16 text-sm font-medium text-slate-500"
-    >
-      <span class="h-2 w-2 animate-ping rounded-full bg-blue-500"></span>
-      Loading recipes…
-    </div>
-    } @else if (hasResults()) {
+    @if (hasResults()) {
     <ul class="divide-y divide-slate-200">
       @for (recipe of cards(); track recipe.id) {
       <li>
@@ -66,7 +60,7 @@
             <h3 class="truncate text-lg font-semibold text-slate-900">{{ recipe.title }}</h3>
             <p class="recipe-description mt-1 text-sm text-slate-600">{{ recipe.description }}</p>
             <p class="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-              {{ formatTypeLabel(recipe.type) }} • {{ recipe.views }} view{{
+              {{ recipe.views }} view{{
                 recipe.views === 1 ? '' : 's'
               }}
             </p>
@@ -82,6 +76,7 @@
     </div>
     }
   </div>
+  }
 
   <nav class="flex flex-wrap items-center justify-between gap-3" aria-label="Recipe pagination">
     <p class="text-sm text-slate-600">

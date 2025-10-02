@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { RecipesListComponent } from './recipes-list.component';
+import { RecipesListComponent } from '../../recipes/components/recipes-list.component';
 
 @Component({
   selector: 'app-search-page',

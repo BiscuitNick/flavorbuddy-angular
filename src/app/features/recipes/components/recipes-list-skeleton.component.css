@@ -1,0 +1,34 @@
+:host {
+  display: block;
+}
+
+.skeleton-block,
+.skeleton-line {
+  position: relative;
+  overflow: hidden;
+  background-color: #e2e8f0;
+}
+
+.skeleton-block {
+  border-radius: 0.75rem;
+}
+
+.skeleton-line {
+  border-radius: 9999px;
+}
+
+.skeleton-block::after,
+.skeleton-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

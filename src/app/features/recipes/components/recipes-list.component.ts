@@ -5,7 +5,8 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, firstValueFrom, map } from 'rxjs';
 
-import { environment } from '../environments/environment';
+import { environment } from '../../../../environments/environment';
+import { RecipesListSkeletonComponent } from './recipes-list-skeleton.component';
 
 interface RecipeSummary {
   id: number;
@@ -53,7 +54,7 @@ interface RecipeCard {
 @Component({
   selector: 'app-recipes-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RecipesListSkeletonComponent],
   templateUrl: './recipes-list.component.html',
   styleUrls: ['./recipes-list.component.css'],
 })
@@ -284,43 +285,49 @@ export class RecipesListComponent {
   }
 
   private extractDescription(recipe: RecipeSummary): string {
+    let description = '';
+
     const directDescription = this.coerceDescription(recipe.description);
     if (directDescription) {
-      return directDescription;
-    }
-
-    const instructions = this.coerceStringList(recipe.instructions);
-    if (instructions.length) {
-      return instructions[0];
-    }
-
-    const ingredients = this.coerceStringList(recipe.ingredients);
-    if (ingredients.length) {
-      return ingredients.slice(0, 3).join(', ');
-    }
-
-    const yields = typeof recipe.yields === 'string' ? recipe.yields.trim() : '';
-    if (yields) {
-      return `Yields ${yields}`;
-    }
-
-    const totalMinutes = this.coerceMinutes(recipe.total_time);
-    if (totalMinutes !== null) {
-      return `Ready in about ${totalMinutes} minute${totalMinutes === 1 ? '' : 's'}`;
-    }
-
-    if (recipe.author && recipe.author.trim()) {
-      return `By ${recipe.author.trim()}`;
-    }
-
-    if (recipe.type) {
-      const label = this.formatTypeLabel(recipe.type);
-      if (label !== 'Unknown') {
-        return label;
+      description = directDescription;
+    } else {
+      const instructions = this.coerceStringList(recipe.instructions);
+      if (instructions.length) {
+        description = instructions[0];
+      } else {
+        const ingredients = this.coerceStringList(recipe.ingredients);
+        if (ingredients.length) {
+          description = ingredients.slice(0, 3).join(', ');
+        } else {
+          const yields = typeof recipe.yields === 'string' ? recipe.yields.trim() : '';
+          if (yields) {
+            description = `Yields ${yields}`;
+          } else {
+            const totalMinutes = this.coerceMinutes(recipe.total_time);
+            if (totalMinutes !== null) {
+              description = `Ready in about ${totalMinutes} minute${totalMinutes === 1 ? '' : 's'}`;
+            } else {
+              if (recipe.author && recipe.author.trim()) {
+                description = `By ${recipe.author.trim()}`;
+              } else {
+                if (recipe.type) {
+                  const label = this.formatTypeLabel(recipe.type);
+                  if (label !== 'Unknown') {
+                    description = label;
+                  } else {
+                    description = 'No description available.';
+                  }
+                } else {
+                  description = 'No description available.';
+                }
+              }
+            }
+          }
+        }
       }
     }
 
-    return 'No description available.';
+    return description.length > 192 ? description.slice(0, 192) + ' ...' : description;
   }
 
   private coerceDescription(value: unknown): string | null {
