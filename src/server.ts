@@ -13,16 +13,44 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
+ * Proxy API requests to backend server
  */
+const API_TARGET = process.env['API_BASE_URL']; // || 'http://localhost:5000';
+
+app.use(express.json());
+
+app.use(
+  ['/parse-recipe-url', '/get-recipes', '/convert-raw-recipe', '/test-scrape'],
+  async (req, res) => {
+    try {
+      const targetUrl = `${API_TARGET}${req.originalUrl}`;
+      const response = await fetch(targetUrl, {
+        method: req.method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined,
+      });
+
+      res.status(response.status);
+      response.headers.forEach((value, key) => {
+        res.setHeader(key, value);
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        const data = await response.json();
+        res.json(data);
+      } else {
+        const data = await response.text();
+        res.send(data);
+      }
+    } catch (error) {
+      console.error('Proxy error:', error);
+      res.status(502).json({ error: 'Failed to proxy request to backend' });
+    }
+  }
+);
 
 /**
  * Serve static files from /browser
@@ -32,7 +60,7 @@ app.use(
     maxAge: '1y',
     index: false,
     redirect: false,
-  }),
+  })
 );
 
 /**
@@ -41,9 +69,7 @@ app.use(
 app.use((req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
     .catch(next);
 });
 

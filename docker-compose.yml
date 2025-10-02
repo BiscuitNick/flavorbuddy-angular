@@ -1,0 +1,9 @@
+services:
+  angular-frontend:
+    build: .
+    ports:
+      - '4000:4000'
+    environment:
+      - NODE_ENV=production
+      - API_BASE_URL=https://fbef6499c0cc.ngrok-free.app
+    restart: unless-stopped
