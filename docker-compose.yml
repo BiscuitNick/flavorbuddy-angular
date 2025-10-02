@@ -6,4 +6,5 @@ services:
     environment:
       - NODE_ENV=production
       - API_BASE_URL=https://python-flask-0ni5.onrender.com
+      - API_TARGET=https://python-flask-0ni5.onrender.com
     restart: unless-stopped
