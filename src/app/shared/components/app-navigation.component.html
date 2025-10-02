@@ -17,7 +17,7 @@
       class="navigation__link"
       [attr.aria-current]="homeLink.isActive ? 'page' : null"
     >
-      Convert Recipe URL
+      Convert URL
     </a>
     <a
       routerLink="/convert-text"
@@ -26,7 +26,7 @@
       class="navigation__link"
       [attr.aria-current]="convertLink.isActive ? 'page' : null"
     >
-      Convert Raw Text
+      Convert Text
     </a>
     <a
       routerLink="/search"
@@ -35,7 +35,16 @@
       class="navigation__link"
       [attr.aria-current]="searchLink.isActive ? 'page' : null"
     >
-      Search Recipes
+      Search
+    </a>
+    <a
+      routerLink="/favorites"
+      routerLinkActive="navigation__link--active"
+      #favoritesLink="routerLinkActive"
+      class="navigation__link"
+      [attr.aria-current]="favoritesLink.isActive ? 'page' : null"
+    >
+      ❤️
     </a>
   </div>
 </nav>

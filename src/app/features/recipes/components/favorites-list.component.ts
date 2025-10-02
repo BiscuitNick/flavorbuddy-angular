@@ -65,13 +65,13 @@ interface RecipeCard {
 }
 
 @Component({
-  selector: 'app-recipes-list',
+  selector: 'app-favorites-list',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RecipesListSkeletonComponent, ArrowUpIconComponent, ArrowDownIconComponent],
-  templateUrl: './recipes-list.component.html',
+  templateUrl: './favorites-list.component.html',
   styleUrls: ['./recipes-list.component.css'],
 })
-export class RecipesListComponent {
+export class FavoritesListComponent {
   private readonly http = inject(HttpClient);
   private readonly fb = inject(FormBuilder);
   private readonly platformId = inject(PLATFORM_ID);
@@ -191,7 +191,6 @@ export class RecipesListComponent {
         this.recipeService.likeRecipe(recipe.id, userId)
       );
 
-      // Update the card in the list
       this.cards.update((cards) =>
         cards.map((card) =>
           card.id === recipe.id
@@ -228,7 +227,6 @@ export class RecipesListComponent {
         this.recipeService.dislikeRecipe(recipe.id, userId)
       );
 
-      // Update the card in the list
       this.cards.update((cards) =>
         cards.map((card) =>
           card.id === recipe.id
@@ -265,19 +263,32 @@ export class RecipesListComponent {
         this.recipeService.favoriteRecipe(recipe.id, userId)
       );
 
-      // Update the card in the list
-      this.cards.update((cards) =>
-        cards.map((card) =>
-          card.id === recipe.id
-            ? {
-                ...card,
-                userFavorited: response.user_favorited,
-                userLiked: response.user_liked,
-                userDisliked: response.user_disliked,
-              }
-            : card
-        )
-      );
+      // If unfavorited, remove from list
+      if (!response.user_favorited) {
+        this.cards.update((cards) => cards.filter((card) => card.id !== recipe.id));
+        // Adjust pagination count
+        this.meta.update((meta) => {
+          if (!meta) return meta;
+          return {
+            ...meta,
+            total_items: Math.max(0, meta.total_items - 1),
+          };
+        });
+      } else {
+        // Update the card in the list
+        this.cards.update((cards) =>
+          cards.map((card) =>
+            card.id === recipe.id
+              ? {
+                  ...card,
+                  userFavorited: response.user_favorited,
+                  userLiked: response.user_liked,
+                  userDisliked: response.user_disliked,
+                }
+              : card
+          )
+        );
+      }
     } catch (error) {
       console.error('Failed to favorite recipe:', error);
     } finally {
@@ -299,19 +310,16 @@ export class RecipesListComponent {
 
     let params = new HttpParams()
       .set('page', this.page().toString())
-      .set('page_size', this.pageSize.toString());
+      .set('page_size', this.pageSize.toString())
+      .set('user_id', userId);
 
     if (query) {
       params = params.set('q', query);
     }
 
-    if (userId) {
-      params = params.set('user_id', userId);
-    }
-
     try {
       const response = await firstValueFrom(
-        this.http.get<RecipesResponse>(environment.recipesPath, { params })
+        this.http.get<RecipesResponse>(environment.favoritedRecipesPath, { params })
       );
 
       this.cards.set(response.results.map((recipe) => this.toCard(recipe)));
@@ -330,7 +338,7 @@ export class RecipesListComponent {
         this.page.set(response.pagination.page);
       }
     } catch (error) {
-      let message = 'Failed to load recipes.';
+      let message = 'Failed to load favorite recipes.';
 
       if (error instanceof HttpErrorResponse) {
         const backendError =

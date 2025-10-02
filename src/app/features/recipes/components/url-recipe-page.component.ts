@@ -2,7 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
@@ -25,6 +25,7 @@ import { RecipeViewerSkeletonComponent } from './recipe-viewer-skeleton.componen
 export class UrlRecipePageComponent {
   private readonly http = inject(HttpClient);
   private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
@@ -59,8 +60,14 @@ export class UrlRecipePageComponent {
     }
 
     this.form.controls.url.setValue(url, { emitEvent: false });
-    this.updateQueryParam(url);
-    await this.fetchRecipe(url);
+
+    const currentPath = this.isBrowser ? window.location.pathname : '/';
+    if (currentPath === '/') {
+      await this.router.navigate(['/recipe'], { queryParams: { url } });
+    } else {
+      await this.fetchRecipe(url);
+      await this.router.navigate(['/recipe'], { queryParams: { url }, replaceUrl: true });
+    }
   }
 
   private async fetchRecipe(url: string): Promise<void> {
@@ -93,23 +100,15 @@ export class UrlRecipePageComponent {
       return;
     }
 
+    const currentPath = window.location.pathname;
     const params = new URLSearchParams(window.location.search);
     const recipeUrl = params.get('url');
-    if (recipeUrl) {
+
+    // Only fetch recipe if we're on /recipe route with a url param
+    if (currentPath === '/recipe' && recipeUrl) {
       this.form.setValue({ url: recipeUrl });
       void this.fetchRecipe(recipeUrl);
     }
-  }
-
-  private updateQueryParam(url: string): void {
-    if (!this.isBrowser) {
-      return;
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    params.set('url', url);
-    const updated = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState({}, '', updated);
   }
 
   private extractErrorMessage(error: unknown): string | null {

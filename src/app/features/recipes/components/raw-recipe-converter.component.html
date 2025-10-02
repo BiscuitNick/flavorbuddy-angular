@@ -1,74 +1,68 @@
 @if (isLoading()) {
 <app-recipe-viewer-skeleton></app-recipe-viewer-skeleton>
-}
-
-@if (result(); as convertedRecipe) {
+} @if (result(); as convertedRecipe) {
 <app-recipe-viewer [recipe]="convertedRecipe" [sourceUrl]="displayedSource()"></app-recipe-viewer>
 }
 
 <section class="space-y-5 print-hidden">
   <div class="space-y-2">
-    <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Convert raw recipe text</h1>
+    <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Convert Text</h1>
     <p class="text-base text-slate-600">
-      Paste unstructured recipe content to generate a structured recipe in the same format as URL conversions.
+      Paste unstructured recipe content to generate a structured recipe card with ingredients and
+      instructions.
     </p>
   </div>
 
-  <form
-    class="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-    [formGroup]="form"
-    (ngSubmit)="onSubmit()"
-    novalidate
-  >
-    <div class="space-y-2">
-      <label for="source-url" class="text-sm font-semibold text-slate-700">Source URL (optional)</label>
-      <input
-        id="source-url"
-        type="url"
-        formControlName="sourceUrl"
-        placeholder="https://example.com/recipe"
-        class="w-full rounded-xl border border-slate-300 px-4 py-3 text-base shadow-sm transition focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-      />
-    </div>
-
-    <div class="space-y-2">
-      <label for="raw-text" class="text-sm font-semibold text-slate-700">Raw recipe text</label>
-      <textarea
-        id="raw-text"
-        formControlName="rawText"
-        rows="10"
-        placeholder="Paste raw recipe text here..."
-        class="w-full rounded-xl border border-slate-300 px-4 py-3 text-base shadow-sm transition focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-      ></textarea>
-      @if (form.controls.rawText.invalid && form.controls.rawText.touched) {
-      <p class="text-sm font-medium text-red-600">Raw text is required.</p>
-      }
-    </div>
-
-    <div class="flex flex-wrap items-center gap-3">
+  <form class="space-y-3" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <textarea
+      id="raw-text"
+      formControlName="rawText"
+      rows="10"
+      placeholder="Copy and paste contents of recipe webpage here..."
+      class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base shadow-sm transition focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 placeholder:text-slate-400"
+      [attr.aria-invalid]="form.controls.rawText.invalid && form.controls.rawText.touched"
+      [attr.aria-describedby]="
+        form.controls.rawText.invalid && form.controls.rawText.touched ? 'raw-text-error' : null
+      "
+      required
+    ></textarea>
+    <div class="grid grid-cols-2">
+      <a
+        routerLink="/"
+        class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+      >
+        URL converter →
+      </a>
       <button
         type="submit"
-        class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3 font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none"
+        class="w-full max-w-md inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3 font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none"
         [disabled]="form.invalid || isLoading()"
       >
         {{ isLoading() ? 'Converting…' : 'Convert' }}
       </button>
-      @if (result()) {
-      <button
-        type="button"
-        class="text-sm font-semibold text-slate-600 hover:text-slate-800"
-        (click)="clearResult()"
-      >
-        Clear result
-      </button>
-      }
-      @if (isLoading()) {
-      <span class="text-sm text-slate-500">This may take a few seconds…</span>
-      }
     </div>
   </form>
 
-  @if (errorMessage(); as error) {
+  @if (form.controls.rawText.invalid && form.controls.rawText.touched) {
+  <p
+    id="raw-text-error"
+    class="text-sm font-medium text-red-600"
+    role="alert"
+    aria-live="assertive"
+  >
+    Raw text is required.
+  </p>
+  } @if (result()) {
+  <button
+    type="button"
+    class="text-sm font-semibold text-slate-600 hover:text-slate-800"
+    (click)="clearResult()"
+  >
+    Clear result
+  </button>
+  } @if (isLoading()) {
+  <span class="text-sm text-slate-500">This may take a few seconds…</span>
+  } @if (errorMessage(); as error) {
   <div
     class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
     role="alert"
@@ -79,7 +73,10 @@
 </section>
 
 <div class="print-hidden">
-  <a routerLink="/" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700">
+  <!-- <a
+    routerLink="/"
+    class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+  >
     Back to URL converter →
-  </a>
+  </a> -->
 </div>

@@ -22,7 +22,7 @@
       formControlName="url"
       placeholder="https://example.com/recipe"
       autocomplete="off"
-      class="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base shadow-sm transition focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 disabled:opacity-60 placeholder:text-slate-400"
+      class="min-w-0 flex-1 sm:w-2/3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base shadow-sm transition focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 disabled:opacity-60 placeholder:text-slate-400"
       [attr.aria-invalid]="form.controls.url.invalid && form.controls.url.touched"
       [attr.aria-describedby]="
         form.controls.url.invalid && form.controls.url.touched ? 'url-error' : null
@@ -31,7 +31,7 @@
     />
     <button
       type="submit"
-      class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3 font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none"
+      class="w-full sm:w-1/3 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3 font-semibold text-white shadow transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none"
       [disabled]="form.invalid || isLoading()"
     >
       {{ isLoading() ? 'Cooking...' : 'Convert' }}

@@ -26,7 +26,7 @@ if (!process.env['API_BASE_URL']) {
 app.use(express.json());
 
 app.use(
-  ['/parse-recipe-url', '/get-recipes', '/convert-raw-recipe', '/test-scrape'],
+  ['/parse-recipe-url', '/get-recipes', '/get-favorited-recipes', '/convert-raw-recipe', '/test-scrape', '/like-recipe', '/dislike-recipe', '/favorite-recipe'],
   async (req, res) => {
     try {
       const targetUrl = `${API_TARGET}${req.originalUrl}`;

@@ -1,17 +1,17 @@
 <section class="space-y-6">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div class="space-y-1">
-      <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Search Recipes</h2>
-      <p class="text-sm text-slate-600 hidden">Browse recipes you've already parsed and saved.</p>
+      <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Favorite Recipes</h2>
+      <p class="text-sm text-slate-600">Browse your favorite recipes.</p>
     </div>
     <div class="relative w-full max-w-xs">
       <input
         type="search"
-        placeholder="Search recipes"
+        placeholder="Search favorites"
         autocomplete="off"
         class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm transition focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
         [formControl]="searchControl"
-        aria-label="Search recipes by title"
+        aria-label="Search favorite recipes by title"
       />
     </div>
   </div>
@@ -118,8 +118,9 @@
     </ul>
     } @else {
     <div class="flex flex-col items-center gap-2 px-6 py-16 text-center text-sm text-slate-500">
-      <span>No recipes found.</span>
-      <span>Try scraping a recipe or adjusting your search.</span>
+      <span>❤️</span>
+      <span class="font-semibold">No favorite recipes yet.</span>
+      <span>Click the heart icon on any recipe to add it to your favorites.</span>
     </div>
     }
   </div>
@@ -127,7 +128,7 @@
 
   <nav class="flex flex-wrap items-center justify-between gap-3" aria-label="Recipe pagination">
     <p class="text-sm text-slate-600">
-      {{ pagination().total_items }} recipe{{ pagination().total_items === 1 ? '' : 's' }} total
+      {{ pagination().total_items }} favorite{{ pagination().total_items === 1 ? '' : 's' }} total
     </p>
     <div class="flex items-center gap-3">
       <button

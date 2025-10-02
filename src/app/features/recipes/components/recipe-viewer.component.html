@@ -45,6 +45,57 @@
         }
       </p>
       }
+      <div class="flex items-center gap-3 print-hidden">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-full border px-4 py-1 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+          [class.border-red-500]="userFavorited()"
+          [class.bg-red-50]="userFavorited()"
+          [class.text-red-600]="userFavorited()"
+          [class.border-slate-300]="!userFavorited()"
+          [class.text-slate-700]="!userFavorited()"
+          [class.hover:border-red-400]="!userFavorited()"
+          [class.hover:bg-red-50]="!userFavorited()"
+          [disabled]="isFavoriting() || recipeId() === null"
+          (click)="handleFavorite()"
+          title="{{ userFavorited() ? 'Remove from favorites' : 'Add to favorites' }}"
+        >
+          <span class="text-lg">{{ userFavorited() ? '❤️' : '🤍' }}</span>
+        </button>
+        <div
+          class="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white p-1 text-sm font-semibold"
+        >
+          <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+            [class.text-green-600]="userLiked()"
+            [class.bg-green-50]="userLiked()"
+            [class.text-slate-400]="!userLiked()"
+            [class.hover:bg-slate-50]="!userLiked()"
+            [disabled]="isLiking() || isDisliking() || recipeId() === null"
+            (click)="handleLike()"
+            title="Like this recipe"
+          >
+            <app-arrow-up-icon [size]="20" />
+          </button>
+          <span class="min-w-[2rem] text-center tabular-nums text-slate-700">{{
+            totalScore()
+          }}</span>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+            [class.text-red-600]="userDisliked()"
+            [class.bg-red-50]="userDisliked()"
+            [class.text-slate-400]="!userDisliked()"
+            [class.hover:bg-slate-50]="!userDisliked()"
+            [disabled]="isLiking() || isDisliking() || recipeId() === null"
+            (click)="handleDislike()"
+            title="Dislike this recipe"
+          >
+            <app-arrow-down-icon [size]="20" />
+          </button>
+        </div>
+      </div>
       @if (description(); as desc) {
       <div class="recipe-description-wrapper">
         <p

@@ -1,7 +1,13 @@
+const API_URL = 'https://python-flask-0ni5.onrender.com';
+
 export const environment = {
   production: true,
-  apiUrl: 'https://python-flask-0ni5.onrender.com',
-  apiPath: 'https://python-flask-0ni5.onrender.com/parse-recipe-url',
-  recipesPath: 'https://python-flask-0ni5.onrender.com/get-recipes',
-  convertRawRecipePath: 'https://python-flask-0ni5.onrender.com/convert-raw-recipe',
+  apiUrl: API_URL,
+  apiPath: `${API_URL}/parse-recipe-url`,
+  recipesPath: `${API_URL}/get-recipes`,
+  favoritedRecipesPath: `${API_URL}/get-favorited-recipes`,
+  convertRawRecipePath: `${API_URL}/convert-raw-recipe`,
+  likeRecipePath: `${API_URL}/like-recipe`,
+  dislikeRecipePath: `${API_URL}/dislike-recipe`,
+  favoriteRecipePath: `${API_URL}/favorite-recipe`
 };

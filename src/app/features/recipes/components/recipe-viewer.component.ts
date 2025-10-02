@@ -14,19 +14,24 @@ import {
   inject,
   signal
 } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 import { RecipePayload } from '../models/recipe.types';
+import { RecipeService } from '../../../core/services/recipe.service';
+import { ArrowUpIconComponent } from '../../../shared/components/arrow-up-icon.component';
+import { ArrowDownIconComponent } from '../../../shared/components/arrow-down-icon.component';
 
 @Component({
   selector: 'app-recipe-viewer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ArrowUpIconComponent, ArrowDownIconComponent],
   templateUrl: './recipe-viewer.component.html',
   styleUrls: ['./recipe-viewer.component.css']
 })
 export class RecipeViewerComponent implements OnChanges, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private readonly recipeService = inject(RecipeService);
 
   @Input() recipe: RecipePayload | null = null;
   @Input() sourceUrl: string | null = null;
@@ -42,6 +47,10 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
 
   protected readonly hasDescriptionOverflow = this.descriptionOverflow.asReadonly();
   protected readonly isDescriptionExpanded = this.descriptionExpanded.asReadonly();
+
+  protected readonly isLiking = signal(false);
+  protected readonly isDisliking = signal(false);
+  protected readonly isFavoriting = signal(false);
 
   protected readonly viewCount = computed(() => {
     const value = this.recipeSignal()?.views;
@@ -131,6 +140,64 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
     this.resolveList(['instructions', 'instructions_list', 'directions'])
   );
 
+  protected readonly recipeId = computed(() => {
+    const value = this.recipeSignal()?.id;
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return Math.max(0, Math.trunc(value));
+    }
+    if (typeof value === 'string') {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return Math.max(0, Math.trunc(parsed));
+      }
+    }
+    return null;
+  });
+
+  protected readonly likes = computed(() => {
+    const value = this.recipeSignal()?.likes;
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return Math.max(0, Math.trunc(value));
+    }
+    if (typeof value === 'string') {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return Math.max(0, Math.trunc(parsed));
+      }
+    }
+    return 0;
+  });
+
+  protected readonly dislikes = computed(() => {
+    const value = this.recipeSignal()?.dislikes;
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return Math.max(0, Math.trunc(value));
+    }
+    if (typeof value === 'string') {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return Math.max(0, Math.trunc(parsed));
+      }
+    }
+    return 0;
+  });
+
+  protected readonly userLiked = computed(() => {
+    return this.recipeSignal()?.user_liked === true;
+  });
+
+  protected readonly userDisliked = computed(() => {
+    return this.recipeSignal()?.user_disliked === true;
+  });
+
+  protected readonly userFavorited = computed(() => {
+    return this.recipeSignal()?.user_favorited === true;
+  });
+
+  protected readonly totalScore = computed(() => {
+    return this.likes() - this.dislikes();
+  });
+
   @ViewChild('descriptionParagraph')
   private descriptionParagraph?: ElementRef<HTMLParagraphElement>;
   private descriptionOverflowTimeout: number | null = null;
@@ -196,6 +263,103 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
     }
 
     window.print();
+  }
+
+  protected async handleLike(): Promise<void> {
+    const recipeId = this.recipeId();
+    if (recipeId === null || this.isLiking() || this.isDisliking()) {
+      return;
+    }
+
+    this.isLiking.set(true);
+
+    try {
+      const userId = this.recipeService.getUserId();
+      const response = await firstValueFrom(
+        this.recipeService.likeRecipe(recipeId, userId)
+      );
+
+      // Update local state
+      const currentRecipe = this.recipeState();
+      if (currentRecipe) {
+        this.recipeState.set({
+          ...currentRecipe,
+          likes: response.likes,
+          dislikes: response.dislikes,
+          user_liked: response.user_liked,
+          user_disliked: response.user_disliked,
+          user_favorited: response.user_favorited
+        });
+      }
+    } catch (error) {
+      console.error('Failed to like recipe:', error);
+    } finally {
+      this.isLiking.set(false);
+    }
+  }
+
+  protected async handleDislike(): Promise<void> {
+    const recipeId = this.recipeId();
+    if (recipeId === null || this.isLiking() || this.isDisliking()) {
+      return;
+    }
+
+    this.isDisliking.set(true);
+
+    try {
+      const userId = this.recipeService.getUserId();
+      const response = await firstValueFrom(
+        this.recipeService.dislikeRecipe(recipeId, userId)
+      );
+
+      // Update local state
+      const currentRecipe = this.recipeState();
+      if (currentRecipe) {
+        this.recipeState.set({
+          ...currentRecipe,
+          likes: response.likes,
+          dislikes: response.dislikes,
+          user_liked: response.user_liked,
+          user_disliked: response.user_disliked,
+          user_favorited: response.user_favorited
+        });
+      }
+    } catch (error) {
+      console.error('Failed to dislike recipe:', error);
+    } finally {
+      this.isDisliking.set(false);
+    }
+  }
+
+  protected async handleFavorite(): Promise<void> {
+    const recipeId = this.recipeId();
+    if (recipeId === null || this.isFavoriting()) {
+      return;
+    }
+
+    this.isFavoriting.set(true);
+
+    try {
+      const userId = this.recipeService.getUserId();
+      const response = await firstValueFrom(
+        this.recipeService.favoriteRecipe(recipeId, userId)
+      );
+
+      // Update local state
+      const currentRecipe = this.recipeState();
+      if (currentRecipe) {
+        this.recipeState.set({
+          ...currentRecipe,
+          user_favorited: response.user_favorited,
+          user_liked: response.user_liked,
+          user_disliked: response.user_disliked
+        });
+      }
+    } catch (error) {
+      console.error('Failed to favorite recipe:', error);
+    } finally {
+      this.isFavoriting.set(false);
+    }
   }
 
   private scheduleDescriptionMeasurement(): void {
