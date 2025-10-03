@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import { RecipePayload } from '../models/recipe.types';
+import { RecipeService } from '../../../core/services/recipe.service';
 import { RecipeViewerComponent } from './recipe-viewer.component';
 import { RecipeViewerSkeletonComponent } from './recipe-viewer-skeleton.component';
 
@@ -28,6 +29,7 @@ export class UrlRecipePageComponent {
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private readonly recipeService = inject(RecipeService);
 
   protected readonly form = this.fb.nonNullable.group({
     url: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/i)]],
@@ -95,6 +97,41 @@ export class UrlRecipePageComponent {
     }
   }
 
+  private async fetchRecipeById(id: string): Promise<void> {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+    this.recipeState.set(null);
+    this.sourceUrl.set(null);
+
+    const urlControl = this.form.controls.url;
+    urlControl.disable({ emitEvent: false });
+
+    let resolvedSourceUrl: string | null = null;
+
+    try {
+      const recipeId = parseInt(id, 10);
+      if (isNaN(recipeId)) {
+        throw new Error('Invalid recipe ID');
+      }
+
+      const payload = await firstValueFrom(
+        this.recipeService.getRecipeById(recipeId)
+      );
+      this.recipeState.set(payload);
+      if (typeof payload.source_url === 'string' && payload.source_url.trim()) {
+        resolvedSourceUrl = payload.source_url.trim();
+      }
+    } catch (error) {
+      const reason = this.extractErrorMessage(error);
+      this.errorMessage.set(this.composeFriendlyError(reason));
+    } finally {
+      urlControl.enable({ emitEvent: false });
+      urlControl.setValue(resolvedSourceUrl ?? '', { emitEvent: false });
+      this.sourceUrl.set(resolvedSourceUrl);
+      this.isLoading.set(false);
+    }
+  }
+
   private populateFromQuery(): void {
     if (!this.isBrowser) {
       return;
@@ -103,11 +140,18 @@ export class UrlRecipePageComponent {
     const currentPath = window.location.pathname;
     const params = new URLSearchParams(window.location.search);
     const recipeUrl = params.get('url');
+    const recipeId = params.get('id');
 
-    // Only fetch recipe if we're on /recipe route with a url param
-    if (currentPath === '/recipe' && recipeUrl) {
-      this.form.setValue({ url: recipeUrl });
-      void this.fetchRecipe(recipeUrl);
+    // Only fetch recipe if we're on /recipe route
+    if (currentPath === '/recipe') {
+      if (recipeId) {
+        // Fetch by ID
+        void this.fetchRecipeById(recipeId);
+      } else if (recipeUrl) {
+        // Fetch by URL
+        this.form.setValue({ url: recipeUrl });
+        void this.fetchRecipe(recipeUrl);
+      }
     }
   }
 
@@ -143,7 +187,7 @@ export class UrlRecipePageComponent {
     const base = "We couldn't load that recipe.";
 
     if (reason?.toLowerCase().includes('website') || reason?.toLowerCase().includes('forbidden')) {
-      return `We couldn't load that recipe. The website is not supported. Try pasting content into our raw text converter.`;
+      return `We couldn't load that recipe. The website is not supported. Try pasting content into Convert Text.`;
     }
 
     if (!reason || reason?.toLowerCase() === 'failed to parse recipe.') {

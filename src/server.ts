@@ -26,7 +26,17 @@ if (!process.env['API_BASE_URL']) {
 app.use(express.json());
 
 app.use(
-  ['/parse-recipe-url', '/get-recipes', '/get-favorited-recipes', '/convert-raw-recipe', '/test-scrape', '/like-recipe', '/dislike-recipe', '/favorite-recipe'],
+  [
+    '/parse-recipe-url',
+    '/get-recipes',
+    '/get-favorited-recipes',
+    '/convert-raw-recipe',
+    '/test-scrape',
+    '/like-recipe',
+    '/dislike-recipe',
+    '/favorite-recipe',
+    '/get-recipe-by-id',
+  ],
   async (req, res) => {
     try {
       const targetUrl = `${API_TARGET}${req.originalUrl}`;

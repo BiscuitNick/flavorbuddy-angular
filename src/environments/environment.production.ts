@@ -5,6 +5,7 @@ export const environment = {
   apiUrl: API_URL,
   apiPath: `${API_URL}/parse-recipe-url`,
   recipesPath: `${API_URL}/get-recipes`,
+  recipeByIdPath: `${API_URL}/get-recipe-by-id`,
   favoritedRecipesPath: `${API_URL}/get-favorited-recipes`,
   convertRawRecipePath: `${API_URL}/convert-raw-recipe`,
   likeRecipePath: `${API_URL}/like-recipe`,

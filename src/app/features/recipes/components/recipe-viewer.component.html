@@ -38,8 +38,14 @@
           Print recipe
         </button>
       </div>
-      @if (views !== null || typeLabel) {
+      @if (views !== null || typeLabel || recipeId() !== null) {
       <p class="text-sm text-slate-600 print-hidden">
+        @if (recipeId(); as id) {
+        <span>Recipe #{{ id }}</span>
+        }
+        @if (recipeId() !== null && views !== null) {
+        <span> • </span>
+        }
         @if (views !== null) {
         <span>Viewed {{ views }} time{{ views === 1 ? '' : 's' }}</span>
         }

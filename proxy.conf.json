@@ -9,7 +9,32 @@
     "secure": false,
     "changeOrigin": true
   },
+  "/get-recipe-by-id": {
+    "target": "http://localhost:5001",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/get-favorited-recipes": {
+    "target": "http://localhost:5001",
+    "secure": false,
+    "changeOrigin": true
+  },
   "/convert-raw-recipe": {
+    "target": "http://localhost:5001",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/like-recipe": {
+    "target": "http://localhost:5001",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/dislike-recipe": {
+    "target": "http://localhost:5001",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/favorite-recipe": {
     "target": "http://localhost:5001",
     "secure": false,
     "changeOrigin": true

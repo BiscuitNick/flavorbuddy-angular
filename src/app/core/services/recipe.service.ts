@@ -1,7 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { RecipePayload } from '../../features/recipes/models/recipe.types';
 
 interface LikeDislikeResponse {
   action: string;
@@ -26,6 +27,11 @@ interface FavoriteResponse {
 })
 export class RecipeService {
   private readonly http = inject(HttpClient);
+
+  getRecipeById(recipeId: number): Observable<RecipePayload> {
+    const params = new HttpParams().set('id', recipeId.toString());
+    return this.http.get<RecipePayload>(environment.recipeByIdPath, { params });
+  }
 
   likeRecipe(recipeId: number, userId: string): Observable<LikeDislikeResponse> {
     return this.http.post<LikeDislikeResponse>(environment.likeRecipePath, {

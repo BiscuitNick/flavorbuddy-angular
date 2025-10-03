@@ -24,10 +24,6 @@
     display: none !important;
   }
 
-  main > *:not(.recipe-card) {
-    display: none !important;
-  }
-
   .print-only {
     display: block !important;
   }
@@ -35,10 +31,6 @@
   .recipe-card-image,
   .description-toggle,
   .print-button {
-    display: none !important;
-  }
-
-  .recipe-description-wrapper {
     display: none !important;
   }
 
@@ -72,5 +64,18 @@
     color: #1e293b !important;
     word-break: break-all;
     margin-top: 0.25rem;
+  }
+
+  .recipe-description-wrapper {
+    display: flex !important;
+  }
+
+  .recipe-description--clamped {
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    -webkit-box-orient: initial !important;
+    overflow: visible !important;
+    text-overflow: initial !important;
   }
 }

@@ -149,7 +149,15 @@ export class FavoritesListComponent {
   }
 
   protected recipeLink(recipe: RecipeCard): string {
-    return `/recipe?url=${recipe.sourceUrl.replace(/%2F/g, '/')}`;
+    if (Number.isFinite(recipe.id)) {
+      return `/recipe?id=${recipe.id}`;
+    }
+
+    if (recipe.sourceUrl) {
+      return `/recipe?url=${encodeURIComponent(recipe.sourceUrl)}`;
+    }
+
+    return '/recipe';
   }
 
   protected formatTypeLabel(type: string): string {
