@@ -114,8 +114,9 @@ export class UrlRecipePageComponent {
         throw new Error('Invalid recipe ID');
       }
 
+      const userId = this.recipeService.getUserId();
       const payload = await firstValueFrom(
-        this.recipeService.getRecipeById(recipeId)
+        this.recipeService.getRecipeById(recipeId, userId)
       );
       this.recipeState.set(payload);
       if (typeof payload.source_url === 'string' && payload.source_url.trim()) {

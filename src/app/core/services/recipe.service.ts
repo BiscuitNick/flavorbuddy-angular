@@ -28,8 +28,11 @@ interface FavoriteResponse {
 export class RecipeService {
   private readonly http = inject(HttpClient);
 
-  getRecipeById(recipeId: number): Observable<RecipePayload> {
-    const params = new HttpParams().set('id', recipeId.toString());
+  getRecipeById(recipeId: number, userId?: string): Observable<RecipePayload> {
+    let params = new HttpParams().set('id', recipeId.toString());
+    if (userId) {
+      params = params.set('user_id', userId);
+    }
     return this.http.get<RecipePayload>(environment.recipeByIdPath, { params });
   }
 
