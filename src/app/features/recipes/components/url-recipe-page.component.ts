@@ -115,9 +115,7 @@ export class UrlRecipePageComponent {
       }
 
       const userId = this.recipeService.getUserId();
-      const payload = await firstValueFrom(
-        this.recipeService.getRecipeById(recipeId, userId)
-      );
+      const payload = await firstValueFrom(this.recipeService.getRecipeById(recipeId, userId));
       this.recipeState.set(payload);
       if (typeof payload.source_url === 'string' && payload.source_url.trim()) {
         resolvedSourceUrl = payload.source_url.trim();
@@ -184,8 +182,9 @@ export class UrlRecipePageComponent {
   }
 
   private composeFriendlyError(reason: string | null): string {
-    const guidance = 'Please confirm the recipe link is correct and try again.';
-    const base = "We couldn't load that recipe.";
+    const guidance =
+      'Please confirm the recipe link is correct and try again. Or try using the Convert Text tool.';
+    const base = 'No recipe found.';
 
     if (reason?.toLowerCase().includes('website') || reason?.toLowerCase().includes('forbidden')) {
       return `We couldn't load that recipe. The website is not supported. Try pasting content into Convert Text.`;
@@ -195,6 +194,6 @@ export class UrlRecipePageComponent {
       return `${base} ${guidance}`;
     }
 
-    return `${base} Details: ${reason}`;
+    return `${base} ${guidance}`;
   }
 }

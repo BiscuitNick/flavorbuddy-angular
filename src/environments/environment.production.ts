@@ -10,5 +10,6 @@ export const environment = {
   convertRawRecipePath: `${API_URL}/convert-raw-recipe`,
   likeRecipePath: `${API_URL}/like-recipe`,
   dislikeRecipePath: `${API_URL}/dislike-recipe`,
-  favoriteRecipePath: `${API_URL}/favorite-recipe`
+  favoriteRecipePath: `${API_URL}/favorite-recipe`,
+  deleteRecipePath: `${API_URL}/delete-recipe`
 };

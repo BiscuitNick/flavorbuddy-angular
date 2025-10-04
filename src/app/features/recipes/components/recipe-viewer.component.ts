@@ -12,8 +12,9 @@ import {
   computed,
   effect,
   inject,
-  signal
+  signal,
 } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { RecipePayload } from '../models/recipe.types';
@@ -24,17 +25,19 @@ import { ArrowDownIconComponent } from '../../../shared/components/arrow-down-ic
 @Component({
   selector: 'app-recipe-viewer',
   standalone: true,
-  imports: [CommonModule, ArrowUpIconComponent, ArrowDownIconComponent],
+  imports: [CommonModule, RouterModule, ArrowUpIconComponent, ArrowDownIconComponent],
   templateUrl: './recipe-viewer.component.html',
-  styleUrls: ['./recipe-viewer.component.css']
+  styleUrls: ['./recipe-viewer.component.css'],
 })
 export class RecipeViewerComponent implements OnChanges, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly recipeService = inject(RecipeService);
+  private readonly router = inject(Router);
 
   @Input() recipe: RecipePayload | null = null;
   @Input() sourceUrl: string | null = null;
+  @Input() showConversionWidget: 'url' | 'text' | null = null;
 
   private readonly recipeState = signal<RecipePayload | null>(null);
   private readonly sourceUrlState = signal<string | null>(null);
@@ -51,6 +54,7 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
   protected readonly isLiking = signal(false);
   protected readonly isDisliking = signal(false);
   protected readonly isFavoriting = signal(false);
+  protected readonly isDeleting = signal(false);
 
   protected readonly viewCount = computed(() => {
     const value = this.recipeSignal()?.views;
@@ -80,7 +84,7 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
       url: 'URL',
       ai_generated: 'AI Generated',
       image_upload: 'Image Upload',
-      user_input: 'User Input'
+      user_input: 'User Input',
     };
 
     if (normalized in overrides) {
@@ -117,7 +121,7 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
     const candidates: unknown[] = [
       recipe.image,
       recipe.image_url,
-      ...(Array.isArray(recipe.images) ? recipe.images : [])
+      ...(Array.isArray(recipe.images) ? recipe.images : []),
     ];
 
     for (const candidate of candidates) {
@@ -198,6 +202,28 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
     return this.likes() - this.dislikes();
   });
 
+  protected readonly hasValidContent = computed(() => {
+    const ingredientsList = this.ingredients();
+    const instructionsList = this.instructions();
+    return ingredientsList.length > 0 && instructionsList.length > 0;
+  });
+
+  protected readonly missingContentMessage = computed(() => {
+    const ingredientsList = this.ingredients();
+    const instructionsList = this.instructions();
+
+    if (ingredientsList.length === 0 && instructionsList.length === 0) {
+      return 'This recipe is missing both ingredients and directions.';
+    }
+    if (ingredientsList.length === 0) {
+      return 'This recipe is missing ingredients.';
+    }
+    if (instructionsList.length === 0) {
+      return 'This recipe is missing directions.';
+    }
+    return null;
+  });
+
   @ViewChild('descriptionParagraph')
   private descriptionParagraph?: ElementRef<HTMLParagraphElement>;
   private descriptionOverflowTimeout: number | null = null;
@@ -275,9 +301,7 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
 
     try {
       const userId = this.recipeService.getUserId();
-      const response = await firstValueFrom(
-        this.recipeService.likeRecipe(recipeId, userId)
-      );
+      const response = await firstValueFrom(this.recipeService.likeRecipe(recipeId, userId));
 
       // Update local state
       const currentRecipe = this.recipeState();
@@ -288,7 +312,7 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
           dislikes: response.dislikes,
           user_liked: response.user_liked,
           user_disliked: response.user_disliked,
-          user_favorited: response.user_favorited
+          user_favorited: response.user_favorited,
         });
       }
     } catch (error) {
@@ -308,9 +332,7 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
 
     try {
       const userId = this.recipeService.getUserId();
-      const response = await firstValueFrom(
-        this.recipeService.dislikeRecipe(recipeId, userId)
-      );
+      const response = await firstValueFrom(this.recipeService.dislikeRecipe(recipeId, userId));
 
       // Update local state
       const currentRecipe = this.recipeState();
@@ -321,7 +343,7 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
           dislikes: response.dislikes,
           user_liked: response.user_liked,
           user_disliked: response.user_disliked,
-          user_favorited: response.user_favorited
+          user_favorited: response.user_favorited,
         });
       }
     } catch (error) {
@@ -341,9 +363,7 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
 
     try {
       const userId = this.recipeService.getUserId();
-      const response = await firstValueFrom(
-        this.recipeService.favoriteRecipe(recipeId, userId)
-      );
+      const response = await firstValueFrom(this.recipeService.favoriteRecipe(recipeId, userId));
 
       // Update local state
       const currentRecipe = this.recipeState();
@@ -352,13 +372,46 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
           ...currentRecipe,
           user_favorited: response.user_favorited,
           user_liked: response.user_liked,
-          user_disliked: response.user_disliked
+          user_disliked: response.user_disliked,
         });
       }
     } catch (error) {
       console.error('Failed to favorite recipe:', error);
     } finally {
       this.isFavoriting.set(false);
+    }
+  }
+
+  protected async handleDelete(): Promise<void> {
+    const recipeId = this.recipeId();
+    if (recipeId === null || this.isDeleting()) {
+      return;
+    }
+
+    if (this.isBrowser) {
+      const title = this.recipeTitle();
+      if (!confirm(`Are you sure you want to delete "${title}"?`)) {
+        return;
+      }
+    }
+
+    this.isDeleting.set(true);
+
+    try {
+      await firstValueFrom(this.recipeService.deleteRecipe(recipeId));
+      this.recipeState.set(null);
+      this.sourceUrlState.set(null);
+
+      if (this.isBrowser) {
+        await this.router.navigate(['/search']);
+      }
+    } catch (error) {
+      console.error('Failed to delete recipe:', error);
+      if (this.isBrowser) {
+        alert('Failed to delete recipe. Please try again.');
+      }
+    } finally {
+      this.isDeleting.set(false);
     }
   }
 

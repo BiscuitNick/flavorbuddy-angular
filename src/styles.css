@@ -1,6 +1,27 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'tailwindcss';
 
+/* Modern, warm color palette */
+:root {
+  --color-primary: #f97316; /* warm orange */
+  --color-primary-dark: #ea580c;
+  --color-primary-light: #fb923c;
+  --color-accent: #fb923c; /* peach */
+  --color-bg: #fefce8; /* warm cream */
+  --color-surface: #ffffff;
+  --color-text: #292524; /* warm dark */
+  --color-text-secondary: #57534e;
+  --color-border: #fde68a;
+  --color-success: #16a34a;
+  --color-error: #dc2626;
+}
+
+body {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fed7aa 100%);
+  background-attachment: fixed;
+  color: var(--color-text);
+}
+
 @media print {
   body,
   html {

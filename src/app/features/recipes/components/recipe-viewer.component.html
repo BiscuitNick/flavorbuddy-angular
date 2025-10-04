@@ -1,172 +1,229 @@
 @if (recipeSignal(); as recipe) {
-<article
-  class="recipe-card overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl ring-1 ring-slate-100 mb-12"
->
-  <div
-    class="recipe-card-header grid gap-6 border-b border-slate-200 bg-gradient-to-br from-sky-50 via-white to-white p-8 md:grid-cols-[220px,1fr] md:items-center"
-  >
-    @if (imageUrl(); as image) {
-    <img
-      [src]="image"
-      alt="Recipe thumbnail"
-      loading="lazy"
-      class="recipe-card-image h-full w-full rounded-xl object-cover shadow-lg md:max-h-72"
-    />
-    }
-    <div class="space-y-4">
-      @let views = viewCount(); @let typeLabel = recipeTypeLabel();
-      <h2 class="text-3xl font-semibold leading-tight">{{ recipeTitle() }}</h2>
-      <div class="flex flex-wrap items-center gap-3">
-        @if (sourceUrlSignal(); as source) {
-        <a
-          [href]="source"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 font-semibold text-blue-600 hover:text-blue-700 print-hidden"
-        >
-          View original recipe →
-        </a>
-        <span class="print-only print-source-url">
-          {{ source }}
-        </span>
-        }
-        <button
-          type="button"
-          class="print-button inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-          (click)="printRecipe()"
-        >
-          Print recipe
-        </button>
-      </div>
-      @if (views !== null || typeLabel || recipeId() !== null) {
-      <p class="text-sm text-slate-600 print-hidden">
-        @if (recipeId(); as id) {
-        <span>Recipe #{{ id }}</span>
-        }
-        @if (recipeId() !== null && views !== null) {
-        <span> • </span>
-        }
-        @if (views !== null) {
-        <span>Viewed {{ views }} time{{ views === 1 ? '' : 's' }}</span>
-        }
-      </p>
-      }
-      <div class="flex items-center gap-3 print-hidden">
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 rounded-full border px-4 py-1 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-          [class.border-red-500]="userFavorited()"
-          [class.bg-red-50]="userFavorited()"
-          [class.text-red-600]="userFavorited()"
-          [class.border-slate-300]="!userFavorited()"
-          [class.text-slate-700]="!userFavorited()"
-          [class.hover:border-red-400]="!userFavorited()"
-          [class.hover:bg-red-50]="!userFavorited()"
-          [disabled]="isFavoriting() || recipeId() === null"
-          (click)="handleFavorite()"
-          title="{{ userFavorited() ? 'Remove from favorites' : 'Add to favorites' }}"
-        >
-          <span class="text-lg">{{ userFavorited() ? '❤️' : '🤍' }}</span>
-        </button>
-        <div
-          class="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white p-1 text-sm font-semibold"
-        >
-          <button
-            type="button"
-            class="inline-flex items-center justify-center rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-            [class.text-green-600]="userLiked()"
-            [class.bg-green-50]="userLiked()"
-            [class.text-slate-400]="!userLiked()"
-            [class.hover:bg-slate-50]="!userLiked()"
-            [disabled]="isLiking() || isDisliking() || recipeId() === null"
-            (click)="handleLike()"
-            title="Like this recipe"
-          >
-            <app-arrow-up-icon [size]="20" />
-          </button>
-          <span class="min-w-[2rem] text-center tabular-nums text-slate-700">{{
-            totalScore()
-          }}</span>
-          <button
-            type="button"
-            class="inline-flex items-center justify-center rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-            [class.text-red-600]="userDisliked()"
-            [class.bg-red-50]="userDisliked()"
-            [class.text-slate-400]="!userDisliked()"
-            [class.hover:bg-slate-50]="!userDisliked()"
-            [disabled]="isLiking() || isDisliking() || recipeId() === null"
-            (click)="handleDislike()"
-            title="Dislike this recipe"
-          >
-            <app-arrow-down-icon [size]="20" />
-          </button>
+  @if (!hasValidContent()) {
+    <!-- Error State: Show only error message and conversion widget -->
+    <div class="space-y-6">
+      <div class="rounded-2xl border-2 border-red-300 bg-red-50 px-6 py-5 shadow-lg">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl">❌</span>
+          <div class="flex-1">
+            <h3 class="text-xl font-bold text-red-900">Recipe Error</h3>
+            <p class="mt-2 text-base text-red-800 leading-relaxed">{{ missingContentMessage() }}</p>
+            @if (showConversionWidget) {
+            <p class="mt-3 text-sm text-red-700">
+              Please try again with a different {{ showConversionWidget === 'url' ? 'URL' : 'recipe text' }} that contains both ingredients and directions.
+            </p>
+            }
+          </div>
         </div>
       </div>
-      @if (description(); as desc) {
-      <div class="recipe-description-wrapper">
-        <p
-          #descriptionParagraph
-          class="recipe-description"
-          [class.recipe-description--clamped]="!isDescriptionExpanded()"
-        >
-          {{ desc }}
-        </p>
-        @if (hasDescriptionOverflow()) {
-        <button
-          type="button"
-          class="description-toggle"
-          (click)="toggleDescription()"
-          [attr.aria-expanded]="isDescriptionExpanded()"
-        >
-          {{ isDescriptionExpanded() ? 'Show less' : 'Show more' }}
-        </button>
-        }
-      </div>
+
+      @if (showConversionWidget === 'url') {
+        <ng-container *ngTemplateOutlet="urlWidget"></ng-container>
+      } @else if (showConversionWidget === 'text') {
+        <ng-container *ngTemplateOutlet="textWidget"></ng-container>
       }
     </div>
-  </div>
-
-  <div class="recipe-card-body grid gap-10 p-8 md:grid-cols-2">
-    <section class="space-y-4" aria-labelledby="ingredients-heading">
-      <h3 id="ingredients-heading" class="text-xl font-semibold">Ingredients</h3>
-      <ul class="space-y-3">
-        @for (item of ingredients(); track $index) {
-        <li
-          class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base leading-relaxed shadow-sm"
-        >
-          {{ item }}
-        </li>
-        } @empty {
-        <li
-          class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-slate-500"
-        >
-          No ingredients provided.
-        </li>
+  } @else {
+    <!-- Valid Recipe: Show full recipe card -->
+    <article
+      class="recipe-card overflow-hidden rounded-3xl border-2 border-orange-200 bg-white shadow-2xl mb-12"
+    >
+      <div
+        class="recipe-card-header grid gap-6 border-b-2 border-orange-100 bg-gradient-to-br from-orange-50 via-amber-50 to-white p-8 md:grid-cols-[220px,1fr] md:items-center"
+      >
+        @if (imageUrl(); as image) {
+        <img
+          [src]="image"
+          alt="Recipe thumbnail"
+          loading="lazy"
+          class="recipe-card-image h-full w-full rounded-xl object-cover shadow-lg md:max-h-72"
+        />
         }
-      </ul>
-    </section>
+        <div class="space-y-4">
+          @let views = viewCount(); @let typeLabel = recipeTypeLabel();
+          <h2 class="text-3xl font-bold leading-tight text-stone-800">{{ recipeTitle() }}</h2>
+          <div class="flex flex-wrap items-center gap-3">
+            @if (sourceUrlSignal(); as source) {
+            <a
+              [href]="source"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 font-semibold text-orange-600 hover:text-orange-700 print-hidden"
+            >
+              View original recipe →
+            </a>
+            <span class="print-only print-source-url">
+              {{ source }}
+            </span>
+            }
+            <button
+              type="button"
+              class="print-button inline-flex items-center gap-2 rounded-full border-2 border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-orange-400 hover:bg-orange-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+              (click)="printRecipe()"
+            >
+              Print recipe
+            </button>
+            @if (recipeId() !== null) {
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-full border-2 border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:border-red-500 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+              [disabled]="isDeleting()"
+              (click)="handleDelete()"
+              title="Delete this recipe"
+            >
+              <span>🗑️</span>
+              Delete recipe
+            </button>
+            }
+          </div>
+          @if (views !== null) {
+          <p class="text-sm text-stone-600 print-hidden">
+            <span>Viewed {{ views }} time{{ views === 1 ? '' : 's' }}</span>
+          </p>
+          }
+          <div class="flex items-center gap-3 print-hidden">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-full border-2 px-4 py-1 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+              [class.border-red-400]="userFavorited()"
+              [class.bg-red-50]="userFavorited()"
+              [class.text-red-600]="userFavorited()"
+              [class.border-orange-300]="!userFavorited()"
+              [class.text-stone-700]="!userFavorited()"
+              [class.hover:border-orange-400]="!userFavorited()"
+              [class.hover:bg-orange-50]="!userFavorited()"
+              [disabled]="isFavoriting() || recipeId() === null"
+              (click)="handleFavorite()"
+              title="{{ userFavorited() ? 'Remove from favorites' : 'Add to favorites' }}"
+            >
+              <span class="text-lg">{{ userFavorited() ? '❤️' : '🤍' }}</span>
+            </button>
+            <div
+              class="inline-flex items-center gap-1 rounded-full border-2 border-orange-300 bg-white p-1 text-sm font-semibold"
+            >
+              <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                [class.text-green-600]="userLiked()"
+                [class.bg-green-100]="userLiked()"
+                [class.text-stone-400]="!userLiked()"
+                [class.hover:bg-orange-50]="!userLiked()"
+                [disabled]="isLiking() || isDisliking() || recipeId() === null"
+                (click)="handleLike()"
+                title="Like this recipe"
+              >
+                <app-arrow-up-icon [size]="20" />
+              </button>
+              <span class="min-w-[2rem] text-center tabular-nums text-stone-800 font-semibold">{{
+                totalScore()
+              }}</span>
+              <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                [class.text-red-600]="userDisliked()"
+                [class.bg-red-100]="userDisliked()"
+                [class.text-stone-400]="!userDisliked()"
+                [class.hover:bg-orange-50]="!userDisliked()"
+                [disabled]="isLiking() || isDisliking() || recipeId() === null"
+                (click)="handleDislike()"
+                title="Dislike this recipe"
+              >
+                <app-arrow-down-icon [size]="20" />
+              </button>
+            </div>
+          </div>
+          @if (description(); as desc) {
+          <div class="recipe-description-wrapper">
+            <p
+              #descriptionParagraph
+              class="recipe-description"
+              [class.recipe-description--clamped]="!isDescriptionExpanded()"
+            >
+              {{ desc }}
+            </p>
+            @if (hasDescriptionOverflow()) {
+            <button
+              type="button"
+              class="description-toggle"
+              (click)="toggleDescription()"
+              [attr.aria-expanded]="isDescriptionExpanded()"
+            >
+              {{ isDescriptionExpanded() ? 'Show less' : 'Show more' }}
+            </button>
+            }
+          </div>
+          }
+        </div>
+      </div>
 
-    <section class="space-y-4" aria-labelledby="instructions-heading">
-      <h3 id="instructions-heading" class="text-xl font-semibold">Directions</h3>
-      <ol class="space-y-4">
-        @for (step of instructions(); track $index) {
-        <li class="flex gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
-          <span
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 font-semibold text-white"
-          >
-            {{ $index + 1 }}
-          </span>
-          <p class="leading-relaxed text-slate-700">{{ step }}</p>
-        </li>
-        } @empty {
-        <li
-          class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-slate-500"
-        >
-          No directions provided.
-        </li>
-        }
-      </ol>
-    </section>
-  </div>
-</article>
+      <div class="recipe-card-body grid gap-10 p-8 md:grid-cols-2 bg-gradient-to-b from-white to-orange-50/30">
+        <section class="space-y-4" aria-labelledby="ingredients-heading">
+          <h3 id="ingredients-heading" class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+            <span class="text-2xl">🥕</span>
+            Ingredients
+          </h3>
+          <ul class="space-y-3">
+            @for (item of ingredients(); track $index) {
+            <li
+              class="rounded-2xl border-2 border-orange-200 bg-white px-5 py-3.5 text-base leading-relaxed shadow-sm hover:shadow-md transition-shadow"
+            >
+              <span class="text-orange-600 font-semibold mr-2">•</span>{{ item }}
+            </li>
+            }
+          </ul>
+        </section>
+
+        <section class="space-y-4" aria-labelledby="instructions-heading">
+          <h3 id="instructions-heading" class="text-2xl font-bold text-stone-800 flex items-center gap-2">
+            <span class="text-2xl">👨‍🍳</span>
+            Directions
+          </h3>
+          <ol class="space-y-4">
+            @for (step of instructions(); track $index) {
+            <li class="flex gap-4 rounded-2xl border-2 border-orange-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+              <span
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-600 font-bold text-white shadow-md"
+              >
+                {{ $index + 1 }}
+              </span>
+              <p class="leading-relaxed text-stone-700">{{ step }}</p>
+            </li>
+            }
+          </ol>
+        </section>
+      </div>
+    </article>
+  }
 }
+
+<!-- Template for URL conversion widget -->
+<ng-template #urlWidget>
+  <div class="rounded-2xl border-2 border-orange-200 bg-white p-6 shadow-lg">
+    <h3 class="text-xl font-bold text-stone-800 mb-4">Try Another Recipe URL</h3>
+    <p class="text-base text-stone-600 mb-5 leading-relaxed">
+      Paste a URL from a recipe website that includes both ingredients and cooking instructions.
+    </p>
+    <a
+      routerLink="/"
+      class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:shadow-xl hover:-translate-y-0.5"
+    >
+      ← Back to URL Converter
+    </a>
+  </div>
+</ng-template>
+
+<!-- Template for text conversion widget -->
+<ng-template #textWidget>
+  <div class="rounded-2xl border-2 border-orange-200 bg-white p-6 shadow-lg">
+    <h3 class="text-xl font-bold text-stone-800 mb-4">Try Different Recipe Text</h3>
+    <p class="text-base text-stone-600 mb-5 leading-relaxed">
+      Make sure your recipe text includes a clear list of ingredients and step-by-step cooking instructions.
+    </p>
+    <a
+      routerLink="/convert-text"
+      class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:shadow-xl hover:-translate-y-0.5"
+    >
+      ← Back to Text Converter
+    </a>
+  </div>
+</ng-template>

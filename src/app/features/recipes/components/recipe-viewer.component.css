@@ -10,8 +10,8 @@
 
 .recipe-description {
   color: inherit;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.7;
   white-space: pre-line;
 }
 
@@ -28,16 +28,18 @@
   align-self: flex-start;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--color-primary);
   text-decoration: none;
   background: transparent;
   border: none;
   padding: 0;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
 .description-toggle:hover,
 .description-toggle:focus-visible {
+  color: var(--color-primary-dark);
   text-decoration: underline;
 }
 

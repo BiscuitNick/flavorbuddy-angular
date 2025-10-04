@@ -16,6 +16,11 @@ const PROXY_CONFIG = {
     secure: false,
     changeOrigin: true,
   },
+  '/delete-recipe': {
+    target: process.env['API_TARGET'] || 'http://localhost:5001',
+    secure: false,
+    changeOrigin: true,
+  },
   '/test-scrape': {
     target: process.env['API_TARGET'] || 'http://localhost:5001',
     secure: false,

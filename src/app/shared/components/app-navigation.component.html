@@ -1,11 +1,14 @@
 <nav class="navigation print-hidden" aria-label="Primary">
   <a routerLink="/" class="navigation__brand">
-    <img
+    <!-- <img
       src="https://d3it3kn2yh66y.cloudfront.net/images/bnd4b9889xrgc0csm7v9f1gcq8-webp-256"
       alt="Flavor Buddy"
       class="navigation__logo"
-    />
-    <div class="m-auto text-2xl">Flavor Buddy</div>
+    /> -->
+    <div class="navigation__brand-text text-4xl">
+      <span class="navigation__brand-icon">🍳</span>
+      <span class="navigation__brand-name">Flavor Buddy</span>
+    </div>
   </a>
 
   <div class="navigation__links">
@@ -17,7 +20,8 @@
       class="navigation__link"
       [attr.aria-current]="homeLink.isActive ? 'page' : null"
     >
-      Convert URL
+      <span class="navigation__link-icon">🌐</span>
+      <span class="navigation__link-text">Convert URL</span>
     </a>
     <a
       routerLink="/convert-text"
@@ -26,7 +30,8 @@
       class="navigation__link"
       [attr.aria-current]="convertLink.isActive ? 'page' : null"
     >
-      Convert Text
+      <span class="navigation__link-icon">📝</span>
+      <span class="navigation__link-text">Convert Text</span>
     </a>
     <a
       routerLink="/search"
@@ -35,16 +40,18 @@
       class="navigation__link"
       [attr.aria-current]="searchLink.isActive ? 'page' : null"
     >
-      Search
+      <span class="navigation__link-icon">🔍</span>
+      <span class="navigation__link-text">Search</span>
     </a>
     <a
       routerLink="/favorites"
       routerLinkActive="navigation__link--active"
       #favoritesLink="routerLinkActive"
-      class="navigation__link"
+      class="navigation__link navigation__link--favorites"
       [attr.aria-current]="favoritesLink.isActive ? 'page' : null"
+      title="Favorites"
     >
-      ❤️
+      <span class="navigation__link-icon">❤️</span>
     </a>
   </div>
 </nav>

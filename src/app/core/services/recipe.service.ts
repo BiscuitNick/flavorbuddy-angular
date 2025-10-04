@@ -57,6 +57,11 @@ export class RecipeService {
     });
   }
 
+  deleteRecipe(recipeId: number): Observable<{ message: string; recipe_id: number }> {
+    const params = new HttpParams().set('id', recipeId.toString());
+    return this.http.delete<{ message: string; recipe_id: number }>(environment.deleteRecipePath, { params });
+  }
+
   getUserId(): string {
     if (typeof window === 'undefined') {
       return '';

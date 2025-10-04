@@ -2,8 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Component, computed, inject, signal, PLATFORM_ID } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, firstValueFrom, map } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import { RecipesListSkeletonComponent } from './recipes-list-skeleton.component';
@@ -81,7 +80,11 @@ export class RecipesListComponent {
   private readonly pageSize = 10;
   private readonly page = signal(1);
 
-  protected readonly searchControl = this.fb.nonNullable.control('');
+  protected readonly searchForm = this.fb.group({
+    query: this.fb.nonNullable.control(''),
+    sortBy: this.fb.nonNullable.control<'newest' | 'most_liked' | 'most_viewed' | 'least_liked'>('newest'),
+    dateRange: this.fb.nonNullable.control<'all' | '24h' | 'week' | 'month' | 'year'>('all')
+  });
 
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
@@ -89,6 +92,8 @@ export class RecipesListComponent {
   private readonly meta = signal<PaginationPayload | null>(null);
   protected readonly processingRecipeId = signal<number | null>(null);
   protected readonly favoritingRecipeId = signal<number | null>(null);
+  protected readonly deletingRecipeId = signal<number | null>(null);
+  protected readonly isLocalhost = signal(false);
 
   protected readonly pagination = computed(
     () =>
@@ -109,25 +114,28 @@ export class RecipesListComponent {
   });
 
   constructor() {
-    this.searchControl.valueChanges
-      .pipe(
-        debounceTime(1000),
-        map((value) => value.trim()),
-        distinctUntilChanged(),
-        takeUntilDestroyed()
-      )
-      .subscribe((term) => {
-        if (term !== this.searchControl.value) {
-          this.searchControl.setValue(term, { emitEvent: false });
-        }
-        this.updateQueryParam(term);
-        this.loadRecipesForPage(1);
-      });
-
     if (this.isBrowser) {
       this.populateFromQuery();
       this.loadRecipesForPage(1);
+      this.isLocalhost.set(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+      // Auto-submit when sort or date range changes
+      this.searchForm.controls.sortBy.valueChanges.subscribe(() => {
+        this.onSubmit();
+      });
+
+      this.searchForm.controls.dateRange.valueChanges.subscribe(() => {
+        this.onSubmit();
+      });
     }
+  }
+
+  protected onSubmit(): void {
+    const query = this.searchForm.controls.query.value.trim();
+    const sortBy = this.searchForm.controls.sortBy.value;
+    const dateRange = this.searchForm.controls.dateRange.value;
+    this.updateQueryParams(query, sortBy, dateRange);
+    this.loadRecipesForPage(1);
   }
 
   protected goToPrevious(): void {
@@ -293,6 +301,38 @@ export class RecipesListComponent {
     }
   }
 
+  protected async handleDelete(recipe: RecipeCard, event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.deletingRecipeId() !== null) {
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete "${recipe.title}"?`)) {
+      return;
+    }
+
+    this.deletingRecipeId.set(recipe.id);
+
+    try {
+      await firstValueFrom(
+        this.recipeService.deleteRecipe(recipe.id)
+      );
+
+      // Remove the card from the list
+      this.cards.update((cards) => cards.filter((card) => card.id !== recipe.id));
+
+      // Reload recipes to update pagination
+      await this.loadRecipes();
+    } catch (error) {
+      console.error('Failed to delete recipe:', error);
+      alert('Failed to delete recipe. Please try again.');
+    } finally {
+      this.deletingRecipeId.set(null);
+    }
+  }
+
   private loadRecipesForPage(page: number): void {
     this.page.set(page);
     void this.loadRecipes();
@@ -303,6 +343,8 @@ export class RecipesListComponent {
     this.errorMessage.set(null);
 
     const query = this.currentQuery();
+    const sortBy = this.currentSortBy();
+    const dateRange = this.searchForm.controls.dateRange.value;
     const userId = this.recipeService.getUserId();
 
     let params = new HttpParams()
@@ -311,6 +353,14 @@ export class RecipesListComponent {
 
     if (query) {
       params = params.set('q', query);
+    }
+
+    if (sortBy) {
+      params = params.set('sort_by', sortBy);
+    }
+
+    if (dateRange && dateRange !== 'all') {
+      params = params.set('date_range', dateRange);
     }
 
     if (userId) {
@@ -362,8 +412,12 @@ export class RecipesListComponent {
   }
 
   private currentQuery(): string {
-    const raw = this.searchControl.value;
+    const raw = this.searchForm.controls.query.value;
     return typeof raw === 'string' ? raw.trim() : '';
+  }
+
+  private currentSortBy(): string {
+    return this.searchForm.controls.sortBy.value;
   }
 
   private populateFromQuery(): void {
@@ -373,21 +427,45 @@ export class RecipesListComponent {
 
     const params = new URLSearchParams(window.location.search);
     const query = params.get('q');
+    const sortBy = params.get('sort_by') as 'newest' | 'most_liked' | 'most_viewed' | 'least_liked' | null;
+    const dateRange = params.get('date_range') as 'all' | '24h' | 'week' | 'month' | 'year' | null;
+
     if (query) {
-      this.searchControl.setValue(query, { emitEvent: false });
+      this.searchForm.controls.query.setValue(query, { emitEvent: false });
+    }
+
+    if (sortBy && ['newest', 'most_liked', 'most_viewed', 'least_liked'].includes(sortBy)) {
+      this.searchForm.controls.sortBy.setValue(sortBy, { emitEvent: false });
+    }
+
+    if (dateRange && ['all', '24h', 'week', 'month', 'year'].includes(dateRange)) {
+      this.searchForm.controls.dateRange.setValue(dateRange, { emitEvent: false });
     }
   }
 
-  private updateQueryParam(query: string): void {
+  private updateQueryParams(query: string, sortBy: string, dateRange: string): void {
     if (!this.isBrowser) {
       return;
     }
 
     const params = new URLSearchParams(window.location.search);
+
     if (query) {
       params.set('q', query);
     } else {
       params.delete('q');
+    }
+
+    if (sortBy && sortBy !== 'newest') {
+      params.set('sort_by', sortBy);
+    } else {
+      params.delete('sort_by');
+    }
+
+    if (dateRange && dateRange !== 'all') {
+      params.set('date_range', dateRange);
+    } else {
+      params.delete('date_range');
     }
 
     const search = params.toString();

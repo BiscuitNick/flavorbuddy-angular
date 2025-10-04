@@ -39,6 +39,11 @@
     "secure": false,
     "changeOrigin": true
   },
+  "/delete-recipe": {
+    "target": "http://localhost:5001",
+    "secure": false,
+    "changeOrigin": true
+  },
   "/test-scrape": {
     "target": "http://localhost:5001",
     "secure": false,

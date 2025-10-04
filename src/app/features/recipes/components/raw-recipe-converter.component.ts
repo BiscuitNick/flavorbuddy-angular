@@ -18,9 +18,15 @@ interface ConversionPayload {
 @Component({
   selector: 'app-raw-recipe-converter',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RecipeViewerComponent, RecipeViewerSkeletonComponent, RouterLink],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RecipeViewerComponent,
+    RecipeViewerSkeletonComponent,
+    RouterLink,
+  ],
   templateUrl: './raw-recipe-converter.component.html',
-  styleUrls: ['./raw-recipe-converter.component.css']
+  styleUrls: ['./raw-recipe-converter.component.css'],
 })
 export class RawRecipeConverterComponent {
   private readonly http = inject(HttpClient);
@@ -28,7 +34,7 @@ export class RawRecipeConverterComponent {
 
   protected readonly form = this.fb.nonNullable.group({
     sourceUrl: [''],
-    rawText: ['', [Validators.required]]
+    rawText: ['', [Validators.required]],
   });
 
   protected readonly isLoading = signal(false);
@@ -57,7 +63,7 @@ export class RawRecipeConverterComponent {
     const trimmedSource = sourceUrl.trim();
     const payload: ConversionPayload = {
       source_url: trimmedSource.length ? trimmedSource : null,
-      raw_text: trimmedText
+      raw_text: trimmedText,
     };
 
     this.isLoading.set(true);

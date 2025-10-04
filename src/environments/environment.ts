@@ -7,5 +7,6 @@ export const environment = {
   convertRawRecipePath: '/convert-raw-recipe',
   likeRecipePath: '/like-recipe',
   dislikeRecipePath: '/dislike-recipe',
-  favoriteRecipePath: '/favorite-recipe'
+  favoriteRecipePath: '/favorite-recipe',
+  deleteRecipePath: '/delete-recipe'
 };

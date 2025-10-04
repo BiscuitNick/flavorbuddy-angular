@@ -1,45 +1,84 @@
 <section class="space-y-6">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <div class="space-y-1">
-      <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Search Recipes</h2>
-      <p class="text-sm text-slate-600 hidden">Browse recipes you've already parsed and saved.</p>
-    </div>
-    <div class="relative w-full max-w-xs">
+  <div class="space-y-3">
+    <h2 class="text-4xl font-bold tracking-tight text-stone-800 flex items-center gap-3">
+      <span class="text-4xl">🔍</span>
+      Search Recipes
+    </h2>
+    <p class="max-w-2xl text-lg text-stone-600 leading-relaxed">Browse and search your collection of saved recipes.</p>
+  </div>
+
+  <form
+    class="space-y-3"
+    [formGroup]="searchForm"
+    (ngSubmit)="onSubmit()"
+    novalidate
+  >
+    <div class="flex flex-col gap-3 sm:flex-row">
       <input
         type="search"
-        placeholder="Search recipes"
+        formControlName="query"
+        placeholder="Search by recipe title..."
         autocomplete="off"
-        class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm shadow-sm transition focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-        [formControl]="searchControl"
+        class="min-w-0 flex-1 rounded-xl border-2 border-orange-300 bg-white px-5 py-3.5 text-base shadow-sm transition focus-visible:border-orange-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 placeholder:text-stone-400"
         aria-label="Search recipes by title"
       />
+      <button
+        type="submit"
+        class="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3.5 font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:from-stone-400 disabled:to-stone-400 disabled:shadow-none"
+        [disabled]="isLoading()"
+      >
+        {{ isLoading() ? 'Searching...' : 'Search' }}
+      </button>
     </div>
-  </div>
+    <div class="flex flex-wrap gap-2">
+      <select
+        formControlName="sortBy"
+        class="rounded-lg border-2 border-orange-200 bg-white px-3 py-2 text-sm shadow-sm transition focus-visible:border-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 text-stone-600 font-medium"
+        aria-label="Sort recipes by"
+      >
+        <option value="newest">Newest First</option>
+        <option value="most_viewed">Most Viewed</option>
+        <option value="most_liked">Most Liked</option>
+        <option value="least_liked">Least Liked</option>
+      </select>
+      <select
+        formControlName="dateRange"
+        class="rounded-lg border-2 border-orange-200 bg-white px-3 py-2 text-sm shadow-sm transition focus-visible:border-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 text-stone-600 font-medium"
+        aria-label="Filter by date range"
+      >
+        <option value="all">All Time</option>
+        <option value="24h">Last 24 Hours</option>
+        <option value="week">Last Week</option>
+        <option value="month">Last Month</option>
+        <option value="year">Last Year</option>
+      </select>
+    </div>
+  </form>
 
   @if (errorMessage(); as message) {
   <div
-    class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+    class="rounded-xl border-2 border-red-300 bg-red-50 px-5 py-4 text-base font-medium text-red-800 shadow-sm"
   >
     {{ message }}
   </div>
   } @if (isLoading()) {
   <app-recipes-list-skeleton />
   } @else {
-  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <div class="overflow-hidden rounded-2xl border-2 border-orange-200 bg-white shadow-lg">
     @if (hasResults()) {
-    <ul class="divide-y divide-slate-200">
+    <ul class="divide-y divide-orange-100">
       @for (recipe of cards(); track recipe.id) {
       <li>
         <a
           [attr.href]="recipe.hasSourceUrl ? recipeLink(recipe) : null"
           [attr.aria-disabled]="recipe.hasSourceUrl ? null : 'true'"
           [attr.tabindex]="recipe.hasSourceUrl ? null : '-1'"
-          class="flex items-center gap-4 p-4 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+          class="flex items-center gap-4 p-5 transition hover:bg-orange-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
           [class.pointer-events-none]="!recipe.hasSourceUrl"
           [class.opacity-70]="!recipe.hasSourceUrl"
         >
           <div
-            class="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-100"
+            class="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-orange-200 bg-orange-50 shadow-sm"
           >
             @if (recipe.imageUrl) {
             <img
@@ -50,66 +89,75 @@
             />
             } @else {
             <div
-              class="flex h-full w-full items-center justify-center text-base font-semibold uppercase text-slate-500"
+              class="flex h-full w-full items-center justify-center text-2xl font-bold uppercase text-orange-600"
             >
               {{ recipe.title.slice(0, 1) || '?' }}
             </div>
             }
           </div>
           <div class="min-w-0 flex-1">
-            <h3 class="truncate text-lg font-semibold text-slate-900">{{ recipe.title }}</h3>
-            <p class="recipe-description mt-1 text-sm text-slate-600">{{ recipe.description }}</p>
-            <p class="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-              {{ recipe.views }} view{{
-                recipe.views === 1 ? '' : 's'
-              }}
-            </p>
-          </div>
-          <div class="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-              [class.border-red-500]="recipe.userFavorited"
-              [class.bg-red-50]="recipe.userFavorited"
-              [class.text-red-600]="recipe.userFavorited"
-              [class.border-slate-300]="!recipe.userFavorited"
-              [class.text-slate-700]="!recipe.userFavorited"
-              [class.hover:border-red-400]="!recipe.userFavorited"
-              [class.hover:bg-red-50]="!recipe.userFavorited"
-              [disabled]="favoritingRecipeId() !== null"
-              (click)="handleFavorite(recipe, $event)"
-              title="{{ recipe.userFavorited ? 'Remove from favorites' : 'Add to favorites' }}"
-            >
-              <span>{{ recipe.userFavorited ? '❤️' : '🤍' }}</span>
-            </button>
-            <div class="inline-flex items-center gap-0.5 rounded-full border border-slate-300 bg-white px-1.5 py-1 text-xs font-semibold">
+            <h3 class="truncate text-lg font-bold text-stone-800">{{ recipe.title }}</h3>
+            <p class="recipe-description mt-1.5 text-sm text-stone-600 leading-relaxed">{{ recipe.description }}</p>
+            <div class="mt-2 flex items-center gap-3">
+              <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                {{ recipe.views }} view{{ recipe.views === 1 ? '' : 's' }}
+              </p>
               <button
                 type="button"
-                class="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-                [class.text-green-600]="recipe.userLiked"
-                [class.bg-green-50]="recipe.userLiked"
-                [class.text-slate-400]="!recipe.userLiked"
-                [class.hover:bg-slate-50]="!recipe.userLiked"
-                [disabled]="processingRecipeId() !== null"
-                (click)="handleLike(recipe, $event)"
-                title="Like this recipe"
+                class="inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                [class.border-red-400]="recipe.userFavorited"
+                [class.bg-red-50]="recipe.userFavorited"
+                [class.text-red-600]="recipe.userFavorited"
+                [class.border-orange-300]="!recipe.userFavorited"
+                [class.text-stone-700]="!recipe.userFavorited"
+                [class.hover:border-orange-400]="!recipe.userFavorited"
+                [class.hover:bg-orange-50]="!recipe.userFavorited"
+                [disabled]="favoritingRecipeId() !== null"
+                (click)="handleFavorite(recipe, $event)"
+                title="{{ recipe.userFavorited ? 'Remove from favorites' : 'Add to favorites' }}"
               >
-                <app-arrow-up-icon [size]="16" />
+                <span>{{ recipe.userFavorited ? '❤️' : '🤍' }}</span>
               </button>
-              <span class="min-w-[1.5rem] text-center tabular-nums text-slate-700">{{ recipe.likes - recipe.dislikes }}</span>
+              <div class="inline-flex items-center gap-0.5 rounded-full border-2 border-orange-300 bg-white px-2 py-1 text-xs font-semibold">
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                  [class.text-green-600]="recipe.userLiked"
+                  [class.bg-green-100]="recipe.userLiked"
+                  [class.text-stone-400]="!recipe.userLiked"
+                  [class.hover:bg-orange-50]="!recipe.userLiked"
+                  [disabled]="processingRecipeId() !== null"
+                  (click)="handleLike(recipe, $event)"
+                  title="Like this recipe"
+                >
+                  <app-arrow-up-icon [size]="16" />
+                </button>
+                <span class="min-w-[1.5rem] text-center tabular-nums text-stone-800 font-semibold">{{ recipe.likes - recipe.dislikes }}</span>
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                  [class.text-red-600]="recipe.userDisliked"
+                  [class.bg-red-100]="recipe.userDisliked"
+                  [class.text-stone-400]="!recipe.userDisliked"
+                  [class.hover:bg-orange-50]="!recipe.userDisliked"
+                  [disabled]="processingRecipeId() !== null"
+                  (click)="handleDislike(recipe, $event)"
+                  title="Dislike this recipe"
+                >
+                  <app-arrow-down-icon [size]="16" />
+                </button>
+              </div>
+              @if (isLocalhost()) {
               <button
                 type="button"
-                class="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
-                [class.text-red-600]="recipe.userDisliked"
-                [class.bg-red-50]="recipe.userDisliked"
-                [class.text-slate-400]="!recipe.userDisliked"
-                [class.hover:bg-slate-50]="!recipe.userDisliked"
-                [disabled]="processingRecipeId() !== null"
-                (click)="handleDislike(recipe, $event)"
-                title="Dislike this recipe"
+                class="inline-flex items-center gap-1.5 rounded-full border-2 border-red-300 bg-white px-3 py-1 text-xs font-semibold text-red-600 transition hover:border-red-500 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+                [disabled]="deletingRecipeId() !== null"
+                (click)="handleDelete(recipe, $event)"
+                title="Delete this recipe"
               >
-                <app-arrow-down-icon [size]="16" />
+                <span>🗑️</span>
               </button>
+              }
             </div>
           </div>
         </a>
@@ -117,37 +165,38 @@
       }
     </ul>
     } @else {
-    <div class="flex flex-col items-center gap-2 px-6 py-16 text-center text-sm text-slate-500">
-      <span>No recipes found.</span>
-      <span>Try scraping a recipe or adjusting your search.</span>
+    <div class="flex flex-col items-center gap-3 px-6 py-20 text-center">
+      <span class="text-4xl">🍽️</span>
+      <p class="text-lg font-semibold text-stone-800">No recipes found</p>
+      <p class="text-base text-stone-600">Try scraping a recipe or adjusting your search.</p>
     </div>
     }
   </div>
   }
 
-  <nav class="flex flex-wrap items-center justify-between gap-3" aria-label="Recipe pagination">
-    <p class="text-sm text-slate-600">
-      {{ pagination().total_items }} recipe{{ pagination().total_items === 1 ? '' : 's' }} total
+  <nav class="flex flex-wrap items-center justify-between gap-4" aria-label="Recipe pagination">
+    <p class="text-base text-stone-700 font-medium">
+      <span class="font-bold text-orange-600">{{ pagination().total_items }}</span> recipe{{ pagination().total_items === 1 ? '' : 's' }} total
     </p>
     <div class="flex items-center gap-3">
       <button
         type="button"
-        class="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-500 hover:text-blue-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+        class="inline-flex items-center rounded-xl border-2 border-orange-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 transition hover:border-orange-400 hover:bg-orange-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:text-stone-400 disabled:bg-stone-50"
         (click)="goToPrevious()"
         [disabled]="isLoading() || !pagination().has_previous"
       >
-        Previous
+        ← Previous
       </button>
-      <span class="text-sm font-medium text-slate-600">
-        Page {{ pagination().page }} of {{ totalPages() }}
+      <span class="text-base font-semibold text-stone-700">
+        Page <span class="text-orange-600">{{ pagination().page }}</span> of {{ totalPages() }}
       </span>
       <button
         type="button"
-        class="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-500 hover:text-blue-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+        class="inline-flex items-center rounded-xl border-2 border-orange-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 transition hover:border-orange-400 hover:bg-orange-50 disabled:cursor-not-allowed disabled:border-stone-200 disabled:text-stone-400 disabled:bg-stone-50"
         (click)="goToNext()"
         [disabled]="isLoading() || !pagination().has_next"
       >
-        Next
+        Next →
       </button>
     </div>
   </nav>
