@@ -1,6 +1,15 @@
-<div class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-  <main class="mx-auto flex max-w-4xl flex-col gap-8 px-5 py-10 lg:px-0">
+<div class="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col">
+  <main class="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-5 py-10 lg:px-0">
     <app-navigation></app-navigation>
     <router-outlet></router-outlet>
   </main>
+  <footer class="border-t border-slate-200 bg-white">
+    <div
+      class="mx-auto flex w-full max-w-4xl flex-col gap-2 px-5 py-6 text-sm text-slate-600 lg:px-0"
+    >
+      <!-- <p class="font-semibold text-slate-700">Flavor Buddy</p> -->
+      <!-- <p>Curating great flavors since 2025.</p> -->
+      <p>© {{ currentYear }} FlavorBuddy.com. All rights reserved.</p>
+    </div>
+  </footer>
 </div>

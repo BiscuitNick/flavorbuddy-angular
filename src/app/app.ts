@@ -10,4 +10,6 @@ import { AppNavigationComponent } from './shared/components/app-navigation.compo
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
-export class App {}
+export class App {
+  readonly currentYear = new Date().getFullYear();
+}

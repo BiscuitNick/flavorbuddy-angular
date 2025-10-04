@@ -1,3 +1,4 @@
+<div class="min-h-screen flex flex-col gap-8">
 @if (!recipe() && isLoading()) {
 <app-recipe-viewer-skeleton></app-recipe-viewer-skeleton>
 } @if (recipe(); as currentRecipe) {
@@ -7,43 +8,50 @@
   [showConversionWidget]="'url'"
 ></app-recipe-viewer>
 } @else {
-<section class="space-y-6 print-hidden">
+<section class="space-y-6 print-hidden flex-1">
   <div class="space-y-3">
     <h1 class="text-4xl font-bold tracking-tight text-stone-800 flex items-center gap-3">
       <span class="text-4xl">🌐</span>
       Convert URL
     </h1>
-    <p class="max-w-2xl text-lg text-stone-600 leading-relaxed">
+    <p class="text-lg text-stone-600 leading-relaxed">
       Transform any recipe URL into a beautiful, organized recipe card with ingredients and
       step-by-step directions.
     </p>
   </div>
 
-  <form
-    class="flex flex-col gap-3 sm:flex-row"
-    [formGroup]="form"
-    (ngSubmit)="onSubmit()"
-    novalidate
-  >
-    <input
-      type="url"
-      formControlName="url"
-      placeholder="https://example.com/recipe"
-      autocomplete="off"
-      class="min-w-0 flex-1 sm:w-2/3 rounded-xl border-2 border-orange-300 bg-white px-5 py-3.5 text-base shadow-sm transition focus-visible:border-orange-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 disabled:opacity-60 placeholder:text-stone-400"
-      [attr.aria-invalid]="form.controls.url.invalid && form.controls.url.touched"
-      [attr.aria-describedby]="
-        form.controls.url.invalid && form.controls.url.touched ? 'url-error' : null
-      "
-      required
-    />
-    <button
-      type="submit"
-      class="w-full sm:w-1/3 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3.5 font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:from-stone-400 disabled:to-stone-400 disabled:shadow-none"
-      [disabled]="form.invalid || isLoading()"
-    >
-      {{ isLoading() ? 'Cooking...' : 'Convert' }}
-    </button>
+  <form class="space-y-3" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <input
+        type="url"
+        formControlName="url"
+        placeholder="https://example.com/recipe"
+        autocomplete="off"
+        class="min-w-0 flex-1 sm:w-2/3 rounded-xl border-2 border-orange-300 bg-white px-5 py-3.5 text-base shadow-sm transition focus-visible:border-orange-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 disabled:opacity-60 placeholder:text-stone-400"
+        [attr.aria-invalid]="form.controls.url.invalid && form.controls.url.touched"
+        [attr.aria-describedby]="
+          form.controls.url.invalid && form.controls.url.touched ? 'url-error' : null
+        "
+        required
+      />
+      <button
+        type="submit"
+        class="w-full sm:w-1/3 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3.5 font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:from-stone-400 disabled:to-stone-400 disabled:shadow-none"
+        [disabled]="form.invalid || isLoading()"
+      >
+        {{ isLoading() ? 'Cooking...' : 'Convert' }}
+      </button>
+    </div>
+
+    <div class="print-hidden">
+      <a
+        routerLink="/convert-text"
+        class="inline-flex items-center gap-2 text-base font-semibold text-orange-600 hover:text-orange-700 transition"
+      >
+        <span>📝</span>
+        Convert Text →
+      </a>
+    </div>
   </form>
 
   @if (form.controls.url.invalid && form.controls.url.touched) {
@@ -60,14 +68,5 @@
   </div>
   }
 </section>
-
-<div class="print-hidden mt-8">
-  <a
-    routerLink="/convert-text"
-    class="inline-flex items-center gap-2 text-base font-semibold text-orange-600 hover:text-orange-700 transition"
-  >
-    <span>📝</span>
-    Convert Text →
-  </a>
-</div>
 }
+</div>

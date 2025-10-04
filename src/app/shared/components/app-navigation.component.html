@@ -5,8 +5,8 @@
       alt="Flavor Buddy"
       class="navigation__logo"
     /> -->
-    <div class="navigation__brand-text text-4xl">
-      <span class="navigation__brand-icon">🍳</span>
+    <div class="navigation__brand-text text-4xl" (click)="onBrandClick()">
+      <span class="navigation__brand-icon">{{ currentIcon }}</span>
       <span class="navigation__brand-name">Flavor Buddy</span>
     </div>
   </a>
