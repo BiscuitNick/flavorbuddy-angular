@@ -39,14 +39,27 @@ body {
     margin: 0 !important;
     padding: 0 !important;
     max-width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
   }
 
   .print-hidden {
     display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
   }
 
   .print-only {
     display: block !important;
+  }
+
+  footer,
+  nav,
+  app-navigation {
+    display: none !important;
+    height: 0 !important;
   }
 
   .recipe-card-image,

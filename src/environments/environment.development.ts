@@ -4,6 +4,7 @@ export const environment = {
   recipesPath: '/get-recipes',
   recipeByIdPath: '/get-recipe-by-id',
   favoritedRecipesPath: '/get-favorited-recipes',
+  relatedRecipesPath: '/get-related-recipes',
   convertRawRecipePath: '/convert-raw-recipe',
   likeRecipePath: '/like-recipe',
   dislikeRecipePath: '/dislike-recipe',

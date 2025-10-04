@@ -2,6 +2,11 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
 
+## Prerequisites
+
+- Node.js `20.19.0` (the `.nvmrc` file in this workspace can be used with `nvm use` to select the correct version)
+- npm `10.x` (bundled with the Node.js runtime above)
+
 ## Development server
 
 To start a local development server, run:
@@ -34,7 +39,7 @@ To build the project run:
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed. If you are using `nvm`, run `nvm use` in this directory before invoking Angular CLI commands.
 
 ## Running unit tests
 

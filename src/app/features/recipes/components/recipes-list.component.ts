@@ -1,6 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Component, computed, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Component, Input, OnInit, Signal, computed, inject, signal, PLATFORM_ID } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 
@@ -70,7 +70,7 @@ interface RecipeCard {
   templateUrl: './recipes-list.component.html',
   styleUrls: ['./recipes-list.component.css'],
 })
-export class RecipesListComponent {
+export class RecipesListComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly fb = inject(FormBuilder);
   private readonly platformId = inject(PLATFORM_ID);
@@ -95,6 +95,35 @@ export class RecipesListComponent {
   protected readonly deletingRecipeId = signal<number | null>(null);
   protected readonly isLocalhost = signal(false);
 
+  private readonly modeState = signal<'search' | 'favorites'>('search');
+
+  @Input()
+  set mode(value: 'search' | 'favorites') {
+    this.modeState.set(value === 'favorites' ? 'favorites' : 'search');
+  }
+
+  protected readonly modeSignal: Signal<'search' | 'favorites'> = this.modeState.asReadonly();
+  protected readonly isSearchMode = computed(() => this.modeSignal() === 'search');
+  protected readonly headerIcon = computed(() => (this.modeSignal() === 'favorites' ? '❤️' : '🔍'));
+  protected readonly headerTitle = computed(() =>
+    this.modeSignal() === 'favorites' ? 'Favorite Recipes' : 'Search Recipes'
+  );
+  protected readonly headerDescription = computed(() =>
+    this.modeSignal() === 'favorites'
+      ? 'Browse and manage your favorite recipes.'
+      : 'Browse and search the collection of saved recipes.'
+  );
+  protected readonly emptyStateIcon = computed(() => (this.modeSignal() === 'favorites' ? '❤️' : '🍽️'));
+  protected readonly emptyStateTitle = computed(() =>
+    this.modeSignal() === 'favorites' ? 'No favorite recipes yet' : 'No recipes found'
+  );
+  protected readonly emptyStateMessage = computed(() =>
+    this.modeSignal() === 'favorites'
+      ? 'Click the heart icon on any recipe to add it to your favorites.'
+      : 'Try scraping a recipe or adjusting your search.'
+  );
+  protected readonly showSortControls = computed(() => this.modeSignal() === 'search');
+
   protected readonly pagination = computed(
     () =>
       this.meta() ?? {
@@ -115,11 +144,6 @@ export class RecipesListComponent {
 
   constructor() {
     if (this.isBrowser) {
-      this.populateFromQuery();
-      this.loadRecipesForPage(1);
-      this.isLocalhost.set(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-      // Auto-submit when sort or date range changes
       this.searchForm.controls.sortBy.valueChanges.subscribe(() => {
         this.onSubmit();
       });
@@ -128,6 +152,18 @@ export class RecipesListComponent {
         this.onSubmit();
       });
     }
+  }
+
+  ngOnInit(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    const hostname = window.location.hostname.toLowerCase();
+    this.isLocalhost.set(hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1');
+
+    this.populateFromQuery();
+    this.loadRecipesForPage(1);
   }
 
   protected onSubmit(): void {
@@ -281,7 +317,18 @@ export class RecipesListComponent {
         this.recipeService.favoriteRecipe(recipe.id, userId)
       );
 
-      // Update the card in the list
+      if (this.modeSignal() === 'favorites' && !response.user_favorited) {
+        this.cards.update((cards) => cards.filter((card) => card.id !== recipe.id));
+
+        const pagination = this.pagination();
+        if (this.cards().length === 0 && pagination.has_previous) {
+          this.page.set(Math.max(1, pagination.page - 1));
+        }
+
+        await this.loadRecipes();
+        return;
+      }
+
       this.cards.update((cards) =>
         cards.map((card) =>
           card.id === recipe.id
@@ -346,6 +393,22 @@ export class RecipesListComponent {
     const sortBy = this.currentSortBy();
     const dateRange = this.searchForm.controls.dateRange.value;
     const userId = this.recipeService.getUserId();
+    const isFavoritesMode = this.modeSignal() === 'favorites';
+
+    if (isFavoritesMode && !userId) {
+      this.cards.set([]);
+      this.meta.set({
+        page: 1,
+        page_size: this.pageSize,
+        total_items: 0,
+        total_pages: 0,
+        has_next: false,
+        has_previous: false,
+      });
+      this.errorMessage.set('You must be signed in to view favorite recipes.');
+      this.isLoading.set(false);
+      return;
+    }
 
     let params = new HttpParams()
       .set('page', this.page().toString())
@@ -355,11 +418,11 @@ export class RecipesListComponent {
       params = params.set('q', query);
     }
 
-    if (sortBy) {
+    if (!isFavoritesMode && sortBy) {
       params = params.set('sort_by', sortBy);
     }
 
-    if (dateRange && dateRange !== 'all') {
+    if (!isFavoritesMode && dateRange && dateRange !== 'all') {
       params = params.set('date_range', dateRange);
     }
 
@@ -368,8 +431,9 @@ export class RecipesListComponent {
     }
 
     try {
+      const endpoint = isFavoritesMode ? environment.favoritedRecipesPath : environment.recipesPath;
       const response = await firstValueFrom(
-        this.http.get<RecipesResponse>(environment.recipesPath, { params })
+        this.http.get<RecipesResponse>(endpoint, { params })
       );
 
       this.cards.set(response.results.map((recipe) => this.toCard(recipe)));
@@ -456,15 +520,20 @@ export class RecipesListComponent {
       params.delete('q');
     }
 
-    if (sortBy && sortBy !== 'newest') {
-      params.set('sort_by', sortBy);
+    if (this.isSearchMode()) {
+      if (sortBy && sortBy !== 'newest') {
+        params.set('sort_by', sortBy);
+      } else {
+        params.delete('sort_by');
+      }
+
+      if (dateRange && dateRange !== 'all') {
+        params.set('date_range', dateRange);
+      } else {
+        params.delete('date_range');
+      }
     } else {
       params.delete('sort_by');
-    }
-
-    if (dateRange && dateRange !== 'all') {
-      params.set('date_range', dateRange);
-    } else {
       params.delete('date_range');
     }
 
@@ -560,7 +629,7 @@ export class RecipesListComponent {
       }
     }
 
-    return description.length > 192 ? description.slice(0, 192) + ' ...' : description;
+    return description;
   }
 
   private coerceDescription(value: unknown): string | null {

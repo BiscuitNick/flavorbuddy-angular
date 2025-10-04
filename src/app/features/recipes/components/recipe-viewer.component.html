@@ -40,7 +40,7 @@
         />
         }
         <div class="space-y-4">
-          @let views = viewCount(); @let typeLabel = recipeTypeLabel();
+          @let views = viewCount();
           <h2 class="text-3xl font-bold leading-tight text-stone-800">{{ recipeTitle() }}</h2>
           <div class="flex flex-wrap items-center gap-3">
             @if (sourceUrlSignal(); as source) {
@@ -63,10 +63,10 @@
             >
               Print recipe
             </button>
-            @if (recipeId() !== null) {
+            @if (canDeleteRecipe()) {
             <button
               type="button"
-              class="inline-flex items-center gap-2 rounded-full border-2 border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:border-red-500 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+              class="print-hidden inline-flex items-center gap-2 rounded-full border-2 border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:border-red-500 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 disabled:cursor-not-allowed disabled:opacity-50"
               [disabled]="isDeleting()"
               (click)="handleDelete()"
               title="Delete this recipe"

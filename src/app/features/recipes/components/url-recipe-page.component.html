@@ -69,4 +69,30 @@
   }
 </section>
 }
+
+@if (recipe()) {
+  @if (relatedRecipes().length > 0) {
+  <section class="mt-12 print-hidden">
+    <app-horizontal-recipe-list
+      [title]="relatedSectionTitle()"
+      [subtitle]="relatedSubtitle()"
+      [recipes]="relatedRecipes()"
+      (like)="handleLike($event)"
+      (dislike)="handleDislike($event)"
+      (favorite)="handleFavorite($event)"
+    />
+  </section>
+  }
+} @else if (recentRecipes().length > 0) {
+<section class="mt-12 print-hidden">
+  <app-horizontal-recipe-list
+    title="Recent Recipes"
+    subtitle="Check out recently added recipes"
+    [recipes]="recentRecipes()"
+    (like)="handleLike($event)"
+    (dislike)="handleDislike($event)"
+    (favorite)="handleFavorite($event)"
+  />
+</section>
+}
 </div>

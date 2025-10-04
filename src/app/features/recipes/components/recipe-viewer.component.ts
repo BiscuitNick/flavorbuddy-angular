@@ -21,11 +21,13 @@ import { RecipePayload } from '../models/recipe.types';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { ArrowUpIconComponent } from '../../../shared/components/arrow-up-icon.component';
 import { ArrowDownIconComponent } from '../../../shared/components/arrow-down-icon.component';
+import { HorizontalRecipeListComponent } from '../../../shared/components/horizontal-recipe-list.component';
+import { RecipeCardData } from '../../../shared/components/recipe-card.component';
 
 @Component({
   selector: 'app-recipe-viewer',
   standalone: true,
-  imports: [CommonModule, RouterModule, ArrowUpIconComponent, ArrowDownIconComponent],
+  imports: [CommonModule, RouterModule, ArrowUpIconComponent, ArrowDownIconComponent, HorizontalRecipeListComponent],
   templateUrl: './recipe-viewer.component.html',
   styleUrls: ['./recipe-viewer.component.css'],
 })
@@ -55,6 +57,9 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
   protected readonly isDisliking = signal(false);
   protected readonly isFavoriting = signal(false);
   protected readonly isDeleting = signal(false);
+
+  protected readonly relatedRecipes = signal<RecipeCardData[]>([]);
+  protected readonly isLoadingRelated = signal(false);
 
   protected readonly viewCount = computed(() => {
     const value = this.recipeSignal()?.views;
@@ -156,6 +161,19 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
       }
     }
     return null;
+  });
+
+  protected readonly canDeleteRecipe = computed(() => {
+    if (this.recipeId() === null) {
+      return false;
+    }
+
+    if (!this.isBrowser) {
+      return false;
+    }
+
+    const hostname = window.location.hostname.toLowerCase();
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
   });
 
   protected readonly likes = computed(() => {
@@ -260,6 +278,10 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
       this.descriptionOverflow.set(false);
       if (this.isBrowser) {
         this.scheduleDescriptionMeasurement();
+        const recipeId = this.recipe?.id;
+        if (typeof recipeId === 'number' && Number.isFinite(recipeId)) {
+          void this.loadRelatedRecipes(recipeId);
+        }
       }
     }
 
@@ -485,5 +507,162 @@ export class RecipeViewerComponent implements OnChanges, OnDestroy {
     }
 
     return [];
+  }
+
+  private async loadRelatedRecipes(recipeId: number): Promise<void> {
+    this.isLoadingRelated.set(true);
+    this.relatedRecipes.set([]);
+
+    try {
+      const userId = this.recipeService.getUserId();
+      const response = await firstValueFrom(
+        this.recipeService.getRelatedRecipes(recipeId, 10, userId)
+      );
+
+      this.relatedRecipes.set(
+        response.results.map((recipe) => ({
+          id: recipe.id,
+          title: recipe.title?.trim() || 'Untitled Recipe',
+          imageUrl: this.normalizeImage(recipe.image),
+          description: this.extractDescription(recipe),
+          views: this.coerceNumber(recipe.views),
+          likes: this.coerceNumber(recipe.likes),
+          dislikes: this.coerceNumber(recipe.dislikes),
+          userLiked: recipe.user_liked === true,
+          userDisliked: recipe.user_disliked === true,
+          userFavorited: recipe.user_favorited === true,
+        }))
+      );
+    } catch (error) {
+      console.error('Failed to load related recipes:', error);
+    } finally {
+      this.isLoadingRelated.set(false);
+    }
+  }
+
+  protected async handleRelatedLike(recipe: RecipeCardData): Promise<void> {
+    try {
+      const userId = this.recipeService.getUserId();
+      const response = await firstValueFrom(
+        this.recipeService.likeRecipe(recipe.id, userId)
+      );
+
+      this.relatedRecipes.update((recipes) =>
+        recipes.map((r) =>
+          r.id === recipe.id
+            ? {
+                ...r,
+                likes: response.likes,
+                dislikes: response.dislikes,
+                userLiked: response.user_liked,
+                userDisliked: response.user_disliked,
+              }
+            : r
+        )
+      );
+    } catch (error) {
+      console.error('Failed to like recipe:', error);
+    }
+  }
+
+  protected async handleRelatedDislike(recipe: RecipeCardData): Promise<void> {
+    try {
+      const userId = this.recipeService.getUserId();
+      const response = await firstValueFrom(
+        this.recipeService.dislikeRecipe(recipe.id, userId)
+      );
+
+      this.relatedRecipes.update((recipes) =>
+        recipes.map((r) =>
+          r.id === recipe.id
+            ? {
+                ...r,
+                likes: response.likes,
+                dislikes: response.dislikes,
+                userLiked: response.user_liked,
+                userDisliked: response.user_disliked,
+              }
+            : r
+        )
+      );
+    } catch (error) {
+      console.error('Failed to dislike recipe:', error);
+    }
+  }
+
+  protected async handleRelatedFavorite(recipe: RecipeCardData): Promise<void> {
+    try {
+      const userId = this.recipeService.getUserId();
+      const response = await firstValueFrom(
+        this.recipeService.favoriteRecipe(recipe.id, userId)
+      );
+
+      this.relatedRecipes.update((recipes) =>
+        recipes.map((r) =>
+          r.id === recipe.id
+            ? { ...r, userFavorited: response.user_favorited }
+            : r
+        )
+      );
+    } catch (error) {
+      console.error('Failed to favorite recipe:', error);
+    }
+  }
+
+  private normalizeImage(value: unknown): string | null {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      return trimmed ? trimmed : null;
+    }
+    return null;
+  }
+
+  private coerceNumber(value: unknown): number {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return Math.max(0, Math.trunc(value));
+    }
+
+    if (typeof value === 'string') {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return Math.max(0, Math.trunc(parsed));
+      }
+    }
+
+    return 0;
+  }
+
+  private extractDescription(recipe: any): string {
+    let description = '';
+
+    const directDescription =
+      typeof recipe.description === 'string' ? recipe.description.trim() : '';
+    if (directDescription) {
+      description = directDescription;
+    } else if (
+      Array.isArray(recipe.instructions) &&
+      recipe.instructions.length > 0
+    ) {
+      const first = recipe.instructions[0];
+      if (typeof first === 'string') {
+        description = first.trim();
+      }
+    } else if (
+      Array.isArray(recipe.ingredients) &&
+      recipe.ingredients.length > 0
+    ) {
+      const ingredients = recipe.ingredients
+        .filter((i: any): i is string => typeof i === 'string')
+        .map((i: string) => i.trim())
+        .filter((i: string) => i.length > 0)
+        .slice(0, 3);
+      description = ingredients.join(', ');
+    } else {
+      description = 'No description available.';
+    }
+
+    return description.length > 100
+      ? description.slice(0, 100) + '...'
+      : description;
   }
 }
