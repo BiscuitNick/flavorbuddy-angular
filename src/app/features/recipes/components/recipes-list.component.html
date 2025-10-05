@@ -1,18 +1,13 @@
 <section class="space-y-6">
   <div class="space-y-3">
-    <h2 class="text-4xl font-bold tracking-tight text-stone-800 flex items-center gap-3">
+    <h2 class="text-2xl font-bold tracking-tight text-stone-800 flex items-center gap-3">
       <span class="text-4xl">{{ headerIcon() }}</span>
       {{ headerTitle() }}
     </h2>
     <p class="max-w-2xl text-lg text-stone-600 leading-relaxed">{{ headerDescription() }}</p>
   </div>
 
-  <form
-    class="space-y-3"
-    [formGroup]="searchForm"
-    (ngSubmit)="onSubmit()"
-    novalidate
-  >
+  <form class="space-y-3" [formGroup]="searchForm" (ngSubmit)="onSubmit()" novalidate>
     <div class="flex flex-col gap-3 sm:flex-row">
       <input
         type="search"
@@ -99,18 +94,19 @@
           </div>
           <div class="min-w-0 flex-1">
             <h3 class="truncate text-lg font-bold text-stone-800">{{ recipe.title }}</h3>
-            <p class="recipe-description mt-1.5 text-sm text-stone-600 leading-relaxed">{{ recipe.description }}</p>
+            <p class="recipe-description mt-1.5 text-sm text-stone-600 leading-relaxed">
+              {{ recipe.description }}
+            </p>
             <div class="mt-2 flex items-center gap-3">
               <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">
                 {{ recipe.views }} view{{ recipe.views === 1 ? '' : 's' }}
               </p>
               <button
                 type="button"
-                class="inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                class="inline-flex h-9 items-center gap-1.5 rounded-full border-2 border-orange-300 bg-white px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
                 [class.border-red-400]="recipe.userFavorited"
                 [class.bg-red-50]="recipe.userFavorited"
                 [class.text-red-600]="recipe.userFavorited"
-                [class.border-orange-300]="!recipe.userFavorited"
                 [class.text-stone-700]="!recipe.userFavorited"
                 [class.hover:border-orange-400]="!recipe.userFavorited"
                 [class.hover:bg-orange-50]="!recipe.userFavorited"
@@ -120,7 +116,9 @@
               >
                 <span>{{ recipe.userFavorited ? '❤️' : '🤍' }}</span>
               </button>
-              <div class="inline-flex items-center gap-0.5 rounded-full border-2 border-orange-300 bg-white px-2 py-1 text-xs font-semibold">
+              <div
+                class="inline-flex h-9 items-center gap-0.5 rounded-full border-2 border-orange-300 bg-white px-2 py-1 text-xs font-semibold"
+              >
                 <button
                   type="button"
                   class="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
@@ -134,7 +132,10 @@
                 >
                   <app-arrow-up-icon [size]="16" />
                 </button>
-                <span class="min-w-[1.5rem] text-center tabular-nums text-stone-800 font-semibold">{{ recipe.likes - recipe.dislikes }}</span>
+                <span
+                  class="min-w-[1.5rem] text-center tabular-nums text-stone-800 font-semibold"
+                  >{{ recipe.likes - recipe.dislikes }}</span
+                >
                 <button
                   type="button"
                   class="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
@@ -178,7 +179,10 @@
 
   <nav class="flex flex-wrap items-center justify-between gap-4" aria-label="Recipe pagination">
     <p class="text-base text-stone-700 font-medium">
-      <span class="font-bold text-orange-600">{{ pagination().total_items }}</span> recipe{{ pagination().total_items === 1 ? '' : 's' }} total
+      <span class="font-bold text-orange-600">{{ pagination().total_items }}</span> recipe{{
+        pagination().total_items === 1 ? '' : 's'
+      }}
+      total
     </p>
     <div class="flex items-center gap-3">
       <button

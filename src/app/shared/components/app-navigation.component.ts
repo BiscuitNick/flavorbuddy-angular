@@ -60,7 +60,7 @@ export class AppNavigationComponent {
     '🧂',
   ];
 
-  currentIcon = '🍳';
+  currentIcon = '🍕';
 
   onBrandClick(): void {
     if (this.foodIcons.length === 0) {

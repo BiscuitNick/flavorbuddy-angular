@@ -1,37 +1,26 @@
 require('dotenv').config();
 
 const PROXY_CONFIG = {
-  '/parse-recipe-url': {
-    target: process.env['API_TARGET'] || 'http://localhost:5001',
-    secure: false,
-    changeOrigin: true,
-  },
-  '/get-recipes': {
-    target: process.env['API_TARGET'] || 'http://localhost:5001',
-    secure: false,
-    changeOrigin: true,
-  },
-  '/convert-raw-recipe': {
-    target: process.env['API_TARGET'] || 'http://localhost:5001',
-    secure: false,
-    changeOrigin: true,
-  },
-  '/get-related-recipes': {
-    target: process.env['API_TARGET'] || 'http://localhost:5001',
-    secure: false,
-    changeOrigin: true,
-  },
-  '/delete-recipe': {
-    target: process.env['API_TARGET'] || 'http://localhost:5001',
-    secure: false,
-    changeOrigin: true,
-  },
-  '/test-scrape': {
-    target: process.env['API_TARGET'] || 'http://localhost:5001',
-    secure: false,
-    changeOrigin: true,
-  },
+  '/parse-recipe-url': makeProxyConfig(),
+  '/get-recipes': makeProxyConfig(),
+  '/get-recipe-by-id': makeProxyConfig(),
+  '/get-related-recipes': makeProxyConfig(),
+  '/get-favorited-recipes': makeProxyConfig(),
+  '/convert-raw-recipe': makeProxyConfig(),
+  '/like-recipe': makeProxyConfig(),
+  '/dislike-recipe': makeProxyConfig(),
+  '/favorite-recipe': makeProxyConfig(),
+  '/delete-recipe': makeProxyConfig(),
+  '/test-scrape': makeProxyConfig(),
 };
+
+function makeProxyConfig() {
+  return {
+    target: process.env['API_TARGET'] || 'http://localhost:5001',
+    secure: false,
+    changeOrigin: true,
+  };
+}
 
 console.log(26, process.env['API_TARGET']);
 

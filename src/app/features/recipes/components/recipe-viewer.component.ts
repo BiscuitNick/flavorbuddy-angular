@@ -21,13 +21,12 @@ import { RecipePayload } from '../models/recipe.types';
 import { RecipeService } from '../../../core/services/recipe.service';
 import { ArrowUpIconComponent } from '../../../shared/components/arrow-up-icon.component';
 import { ArrowDownIconComponent } from '../../../shared/components/arrow-down-icon.component';
-import { HorizontalRecipeListComponent } from '../../../shared/components/horizontal-recipe-list.component';
 import { RecipeCardData } from '../../../shared/components/recipe-card.component';
 
 @Component({
   selector: 'app-recipe-viewer',
   standalone: true,
-  imports: [CommonModule, RouterModule, ArrowUpIconComponent, ArrowDownIconComponent, HorizontalRecipeListComponent],
+  imports: [CommonModule, RouterModule, ArrowUpIconComponent, ArrowDownIconComponent],
   templateUrl: './recipe-viewer.component.html',
   styleUrls: ['./recipe-viewer.component.css'],
 })
