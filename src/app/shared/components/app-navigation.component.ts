@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
@@ -9,7 +9,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './app-navigation.component.html',
   styleUrls: ['./app-navigation.component.css'],
 })
-export class AppNavigationComponent {
+export class AppNavigationComponent implements OnInit {
+  private readonly document = inject(DOCUMENT, { optional: true });
+
   private readonly foodIcons: string[] = [
     '🍞',
     '🥐',
@@ -62,6 +64,10 @@ export class AppNavigationComponent {
 
   currentIcon = '🍕';
 
+  ngOnInit(): void {
+    this.updateFavicon(this.currentIcon);
+  }
+
   onBrandClick(): void {
     if (this.foodIcons.length === 0) {
       return;
@@ -69,6 +75,7 @@ export class AppNavigationComponent {
 
     const nextIcon = this.getRandomIcon();
     this.currentIcon = nextIcon;
+    this.updateFavicon(nextIcon);
   }
 
   private getRandomIcon(): string {
@@ -84,5 +91,33 @@ export class AppNavigationComponent {
     }
 
     return nextIcon;
+  }
+
+  private updateFavicon(icon: string): void {
+    const doc = this.document;
+    if (!doc) {
+      return;
+    }
+
+    const head = doc.head ?? doc.getElementsByTagName('head')[0];
+    if (!head) {
+      return;
+    }
+
+    let link = head.querySelector<HTMLLinkElement>("link[rel='icon']");
+    if (!link) {
+      link = doc.createElement('link');
+      link.rel = 'icon';
+      head.appendChild(link);
+    }
+
+    link.type = 'image/svg+xml';
+    link.href = this.buildFaviconData(icon);
+  }
+
+  private buildFaviconData(icon: string): string {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${icon}</text></svg>`;
+    const encoded = encodeURIComponent(svg);
+    return `data:image/svg+xml,${encoded}`;
   }
 }
